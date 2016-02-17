@@ -1,0 +1,6 @@
+box: inbobmk/r-3.2.3:develop
+build:
+  steps:
+    - inbobmk/r-check
+    - inbobmk/r-coverage
+    - inbobmk/r-lint
