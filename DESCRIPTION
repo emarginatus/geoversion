@@ -1,0 +1,12 @@
+Package: geoversion
+Title: Store and read spatial objects with version history
+Version: 0.0.0
+Authors@R: person("Thierry", "Onkelinx", email = "emarginatus@muscardinus.be", role = c("aut", "cre"))
+Description: Store spatial objects from the sp package into a database while
+    maintaining the version history. A specific version of the spatial object can be
+    retrieved.
+Depends:
+    R (>= 3.2.3)
+License: GPL-3
+LazyData: true
+RoxygenNote: 5.0.1
