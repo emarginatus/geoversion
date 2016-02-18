@@ -16,3 +16,7 @@ Imports:
     methods
 Suggests:
     testthat
+Collate:
+    'geoversion_class.R'
+    'combine.R'
+    'convert_polygon.R'
