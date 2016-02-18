@@ -8,7 +8,7 @@
 setGeneric(
   name = "convert",
   def = function(object){
-    standard.generic("convert")
+    standard.generic("convert") #nocov
   }
 )
 
@@ -29,7 +29,8 @@ setMethod(
     )
     colnames(coordinates) <- c("Hash", "Order", "X", "Y")
     return(
-      list(
+      new(
+        "geoVersion",
         Coordinates = coordinates,
         Feature = data.frame(
           Hash = hash,
