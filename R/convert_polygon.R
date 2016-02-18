@@ -41,3 +41,16 @@ setMethod(
     )
   }
 )
+
+#' @rdname convert
+#' @importFrom methods setMethod
+setMethod(
+  f = "convert",
+  signature = "list",
+  definition = function(object){
+    do.call(
+      combine,
+      lapply(object, convert)
+    )
+  }
+)
