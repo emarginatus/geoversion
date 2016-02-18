@@ -1,0 +1,12 @@
+box: inbobmk/r-3.2.3:develop
+build:
+  steps:
+    - script:
+        name: installation of dependencies
+        code: |
+          wget https://github.com/cran/sp/archive/1.2-2.tar.gz
+          R CMD INSTALL 1.2-2.tar.gz
+          rm 1.2-2.tar.gz
+    - inbobmk/r-check
+    - inbobmk/r-coverage
+    - inbobmk/r-lint
