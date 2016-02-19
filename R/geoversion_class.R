@@ -4,13 +4,15 @@
 #' @exportClass geoVersion
 #' @aliases geoVersion-class
 #' @importFrom methods setClass
+#' @importClassesFrom sp CRS
 #' @docType class
 setClass(
   "geoVersion",
   representation = representation(
     Coordinates = "data.frame",
     Feature = "data.frame",
-    Features = "data.frame"
+    Features = "data.frame",
+    CRS = "CRS"
   ),
   prototype = prototype(
     Coordinates = data.frame(

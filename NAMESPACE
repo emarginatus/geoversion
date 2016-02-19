@@ -3,6 +3,7 @@
 exportClasses(geoVersion)
 exportMethods(combine)
 exportMethods(convert)
+importClassesFrom(sp,CRS)
 importClassesFrom(sp,Polygon)
 importClassesFrom(sp,Polygons)
 importFrom(digest,sha1)
