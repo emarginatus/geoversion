@@ -9,7 +9,8 @@ setClass(
   "geoVersion",
   representation = representation(
     Coordinates = "data.frame",
-    Feature = "data.frame"
+    Feature = "data.frame",
+    Features = "data.frame"
   ),
   prototype = prototype(
     Coordinates = data.frame(
@@ -22,6 +23,11 @@ setClass(
     Feature = data.frame(
       Hash = character(0),
       Type = character(0),
+      stringsAsFactors = FALSE
+    ),
+    Features = data.frame(
+      Hash = character(0),
+      Feature = character(0),
       stringsAsFactors = FALSE
     )
   )

@@ -31,10 +31,17 @@ setMethod(
         x@Feature
       }
     )
+    features <- lapply(
+      list(...),
+      function(x){
+        x@Features
+      }
+    )
     new(
       "geoVersion",
       Coordinates = do.call(rbind, coordinates),
-      Feature = do.call(rbind, feature)
+      Feature = do.call(rbind, feature),
+      Features = do.call(rbind, features)
     )
   }
 )
