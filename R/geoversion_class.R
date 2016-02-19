@@ -35,7 +35,7 @@ setValidity(
       stop("Duplicated hashes in the Feature slot")
     }
     if (any(!object@Feature$Type %in% c("S", "H"))) {
-      stop("Feature type can be only 'S' or 'H")
+      stop("Feature type can be only 'S' or 'H'")
     }
   }
 )
