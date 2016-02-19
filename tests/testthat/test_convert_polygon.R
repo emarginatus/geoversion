@@ -14,12 +14,12 @@ test_that(
       poly_c@Feature,
       c("Hash", "Type")
     )
-    expect_true(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash)
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
     expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
   }
 )
 test_that(
-  "Polygon objects are converted", {
+  "Polygons objects are converted", {
     expect_is(
       poly_c <- convert(polygons[[1]]),
       "geoVersion"
@@ -32,7 +32,7 @@ test_that(
       poly_c@Feature,
       c("Hash", "Type")
     )
-    expect_true(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash)
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
     expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
   }
 )
@@ -58,6 +58,24 @@ test_that(
   "lists of Polygons objects are converted", {
     expect_is(
       poly_c <- convert(polygons),
+      "geoVersion"
+    )
+    expect_named(
+      poly_c@Coordinates,
+      c("Hash", "Order", "X", "Y")
+    )
+    expect_named(
+      poly_c@Feature,
+      c("Hash", "Type")
+    )
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "SpatialPolygons objects are converted", {
+    expect_is(
+      poly_c <- convert(sppoly),
       "geoVersion"
     )
     expect_named(

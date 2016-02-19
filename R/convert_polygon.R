@@ -60,6 +60,19 @@ setMethod(
 
 #' @rdname convert
 #' @importFrom methods setMethod
+#' @importClassesFrom sp SpatialPolygons
+setMethod(
+  f = "convert",
+  signature = "SpatialPolygons",
+  definition = function(object){
+    poly <- convert(object@polygons)
+    poly@CRS <- object@proj4string
+    return(poly)
+  }
+)
+
+#' @rdname convert
+#' @importFrom methods setMethod
 setMethod(
   f = "convert",
   signature = "list",
