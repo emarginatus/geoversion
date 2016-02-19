@@ -44,6 +44,22 @@ setMethod(
 
 #' @rdname convert
 #' @importFrom methods setMethod
+#' @importClassesFrom sp Polygons
+setMethod(
+  f = "convert",
+  signature = "Polygons",
+  definition = function(object){
+    poly <- convert(object@Polygons)
+    poly@Features <- data.frame(
+      Hash = object@ID,
+      Feature = poly@Feature$Hash
+    )
+    return(poly)
+  }
+)
+
+#' @rdname convert
+#' @importFrom methods setMethod
 setMethod(
   f = "convert",
   signature = "list",

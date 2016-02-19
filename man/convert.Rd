@@ -4,12 +4,15 @@
 \name{convert}
 \alias{convert}
 \alias{convert,Polygon-method}
+\alias{convert,Polygons-method}
 \alias{convert,list-method}
 \title{Convert a spatial object}
 \usage{
 convert(object)
 
 \S4method{convert}{Polygon}(object)
+
+\S4method{convert}{Polygons}(object)
 
 \S4method{convert}{list}(object)
 }
