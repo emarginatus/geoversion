@@ -13,6 +13,8 @@ setClass(
     Feature = "data.frame",
     Features = "data.frame",
     LayerElement = "data.frame",
+    Attribute = "data.frame",
+    AttributeValue = "data.frame",
     CRS = "CRS"
   ),
   prototype = prototype(
@@ -36,6 +38,18 @@ setClass(
     LayerElement = data.frame(
       ID = integer(0),
       Features = character(0),
+      stringsAsFactors = FALSE
+    ),
+    Attribute = data.frame(
+      ID = character(0),
+      Name = character(0),
+      Type = character(0),
+      stringsAsFactors = FALSE
+    ),
+    AttributeValue = data.frame(
+      Element = character(0),
+      Attribute = character(0),
+      Value = character(0),
       stringsAsFactors = FALSE
     )
   )
