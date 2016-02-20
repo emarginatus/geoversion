@@ -4,23 +4,99 @@ test_that(
   "Polygon objects are converted", {
     expect_is(
       poly_c <- convert(polygon[[1]]),
-      "list"
+      "geoVersion"
     )
     expect_named(
-      poly_c,
-      c("Coordinates", "Feature")
-    )
-    expect_is(poly_c$Coordinates, "data.frame")
-    expect_is(poly_c$Feature, "data.frame")
-    expect_named(
-      poly_c$Coordinates,
+      poly_c@Coordinates,
       c("Hash", "Order", "X", "Y")
     )
     expect_named(
-      poly_c$Feature,
+      poly_c@Feature,
       c("Hash", "Type")
     )
-    expect_true(poly_c$Feature$Hash %in% poly_c$Coordinates$Hash)
-    expect_true(all(poly_c$Coordinates$Hash %in% poly_c$Feature$Hash))
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "Polygons objects are converted", {
+    expect_is(
+      poly_c <- convert(polygons[[1]]),
+      "geoVersion"
+    )
+    expect_named(
+      poly_c@Coordinates,
+      c("Hash", "Order", "X", "Y")
+    )
+    expect_named(
+      poly_c@Feature,
+      c("Hash", "Type")
+    )
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "lists of Polygon objects are converted", {
+    expect_is(
+      poly_c <- convert(polygon),
+      "geoVersion"
+    )
+    expect_named(
+      poly_c@Coordinates,
+      c("Hash", "Order", "X", "Y")
+    )
+    expect_named(
+      poly_c@Feature,
+      c("Hash", "Type")
+    )
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "lists of Polygons objects are converted", {
+    expect_is(
+      poly_c <- convert(polygons),
+      "geoVersion"
+    )
+    expect_named(
+      poly_c@Coordinates,
+      c("Hash", "Order", "X", "Y")
+    )
+    expect_named(
+      poly_c@Feature,
+      c("Hash", "Type")
+    )
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "SpatialPolygonsDataFrame objects are converted", {
+    expect_is(
+      poly_c <- convert(sppolydf, id = "PermanentID"),
+      "geoVersion"
+    )
+    expect_named(
+      poly_c@Coordinates,
+      c("Hash", "Order", "X", "Y")
+    )
+    expect_named(
+      poly_c@Feature,
+      c("Hash", "Type")
+    )
+    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
+    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+  }
+)
+test_that(
+  "different CRS return an error", {
+    poly_c2 <- poly_c <- convert(polygon[[1]])
+    poly_c2@CRS <- CRS("+proj=longlat +datum=WGS84")
+    expect_error(
+      combine(poly_c, poly_c2),
+      "CRS not unique"
+    )
   }
 )

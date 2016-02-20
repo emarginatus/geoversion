@@ -12,7 +12,13 @@ LazyData: true
 RoxygenNote: 5.0.1
 Imports:
     digest,
+    dplyr,
+    methods,
     sp,
-    methods
+    tidyr
 Suggests:
     testthat
+Collate:
+    'geoversion_class.R'
+    'combine.R'
+    'convert_polygon.R'
