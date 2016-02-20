@@ -1,4 +1,3 @@
-library(sp)
 df <- data.frame(
   PermanentID = 1:2,
   Text = c("A", "B"),
