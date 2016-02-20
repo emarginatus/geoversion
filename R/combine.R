@@ -51,7 +51,7 @@ setMethod(
     )
     crs <- unique(crs)
     if (length(crs) > 1) {
-      stop("CRS not unique")
+      stop("CRS not unique", call. = FALSE)
     }
     new(
       "geoVersion",

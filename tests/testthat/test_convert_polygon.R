@@ -90,3 +90,13 @@ test_that(
     expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
   }
 )
+test_that(
+  "different CRS return an error", {
+    poly_c2 <- poly_c <- convert(polygon[[1]])
+    poly_c2@CRS <- CRS("+proj=longlat +datum=WGS84")
+    expect_error(
+      combine(poly_c, poly_c2),
+      "CRS not unique"
+    )
+  }
+)
