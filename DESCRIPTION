@@ -12,8 +12,9 @@ LazyData: true
 RoxygenNote: 5.0.1
 Imports:
     digest,
-    sp,
-    methods
+    dplyr,
+    methods,
+    sp
 Suggests:
     testthat
 Collate:

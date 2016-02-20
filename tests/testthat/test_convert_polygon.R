@@ -73,9 +73,9 @@ test_that(
   }
 )
 test_that(
-  "SpatialPolygons objects are converted", {
+  "SpatialPolygonsDataFrame objects are converted", {
     expect_is(
-      poly_c <- convert(sppoly),
+      poly_c <- convert(sppolydf, id = "PermanentID"),
       "geoVersion"
     )
     expect_named(
