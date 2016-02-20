@@ -37,11 +37,29 @@ setMethod(
         x@Features
       }
     )
+    layer.element <- lapply(
+      list(...),
+      function(x){
+        x@LayerElement
+      }
+    )
+    crs <- lapply(
+      list(...),
+      function(x){
+        x@CRS
+      }
+    )
+    crs <- unique(crs)
+    if (length(crs) > 1) {
+      stop("CRS not unique")
+    }
     new(
       "geoVersion",
       Coordinates = do.call(rbind, coordinates),
       Feature = do.call(rbind, feature),
-      Features = do.call(rbind, features)
+      Features = do.call(rbind, features),
+      LayerElement = do.call(rbind, layer.element),
+      CRS = crs[[1]]
     )
   }
 )

@@ -12,6 +12,7 @@ setClass(
     Coordinates = "data.frame",
     Feature = "data.frame",
     Features = "data.frame",
+    LayerElement = "data.frame",
     CRS = "CRS"
   ),
   prototype = prototype(
@@ -30,6 +31,11 @@ setClass(
     Features = data.frame(
       Hash = character(0),
       Feature = character(0),
+      stringsAsFactors = FALSE
+    ),
+    LayerElement = data.frame(
+      ID = integer(0),
+      Features = character(0),
       stringsAsFactors = FALSE
     )
   )
