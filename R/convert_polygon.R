@@ -62,8 +62,9 @@ setMethod(
 
 #' @rdname convert
 #' @importFrom methods setMethod
-#' @importFrom dplyr %>% group_by_ summarise_ mutate_ inner_join select_
+#' @importFrom dplyr %>% group_by_ summarise_ mutate_ inner_join select_ filter_ rowwise mutate_ rename_ mutate_each funs
 #' @importFrom digest sha1
+#' @importFrom tidyr gather
 #' @importClassesFrom sp SpatialPolygonsDataFrame
 setMethod(
   f = "convert",
@@ -90,6 +91,28 @@ setMethod(
       )
     poly@LayerElement <- hash %>%
       select_(~ID, ~Features) %>%
+      as.data.frame()
+    poly@Attribute <- data.frame(
+      Name = colnames(object@data),
+      Type = sapply(object@data, class),
+      stringsAsFactors = FALSE
+    ) %>%
+      filter_(~Name != id) %>%
+      rowwise() %>%
+      mutate_(
+        ID = ~sha1(list(Name = Name, Type = Type))
+      ) %>%
+      as.data.frame()
+    poly@AttributeValue <- object@data %>%
+      rename_(Element = id) %>%
+      group_by_(~Element) %>%
+      mutate_each(funs(as.character)) %>%
+      gather(key = "Name", value = "Value", na.rm = TRUE, -1) %>%
+      inner_join(
+        poly@Attribute,
+        by = "Name"
+      ) %>%
+      select_(~Element, Attribute = ~ID, ~Value) %>%
       as.data.frame()
     return(poly)
   }
