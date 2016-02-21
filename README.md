@@ -1,17 +1,17 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<table style="width:51%;">
+<table style="width:49%;">
 <colgroup>
 <col width="11%" />
 <col width="18%" />
-<col width="19%" />
-<col width="2%" />
+<col width="6%" />
+<col width="12%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left">Branch</th>
 <th align="left">Build status</th>
-<th align="left">Code coverage</th>
-<th align="left"></th>
+<th align="left">Code</th>
+<th align="left">coverage</th>
 </tr>
 </thead>
 <tbody>
