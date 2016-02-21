@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-| Branch  | Build status | Code coverage |
-| ------- | ------------ | ------------- |
-| Master  | [![wercker status](https://app.wercker.com/status/bd4930c4d92c16decdde4d37c735a894/m/master "wercker status")](https://app.wercker.com/project/bykey/bd4930c4d92c16decdde4d37c735a894) | [![codecov.io](https://codecov.io/github/emarginatus/geoversion/coverage.svg?branch=master)](https://codecov.io/github/emarginatus/geoversion?branch=master) ![codecov.io](https://codecov.io/github/emarginatus/geoversion/branch.svg?branch=master) |
-| Develop | [![wercker status](https://app.wercker.com/status/bd4930c4d92c16decdde4d37c735a894/m/develop "wercker status")](https://app.wercker.com/project/bykey/bd4930c4d92c16decdde4d37c735a894) | [![codecov.io](https://codecov.io/github/emarginatus/geoversion/coverage.svg?branch=master)](https://codecov.io/github/emarginatus/geoversion?branch=develop) ![codecov.io](https://codecov.io/github/emarginatus/geoversion/branch.svg?branch=develop) |
+| Branch  | Build status | Code coverage |   |
+| ------- | ------------ | ------------- | - |
+| Master  | [![wercker status](https://app.wercker.com/status/bd4930c4d92c16decdde4d37c735a894/m/master "wercker status")](https://app.wercker.com/project/bykey/bd4930c4d92c16decdde4d37c735a894) | [![codecov.io](https://codecov.io/github/emarginatus/geoversion/coverage.svg?branch=master)](https://codecov.io/github/emarginatus/geoversion?branch=master) | ![codecov.io](https://codecov.io/github/emarginatus/geoversion/branch.svg?branch=master) |
+| Develop | [![wercker status](https://app.wercker.com/status/bd4930c4d92c16decdde4d37c735a894/m/develop "wercker status")](https://app.wercker.com/project/bykey/bd4930c4d92c16decdde4d37c735a894) | [![codecov.io](https://codecov.io/github/emarginatus/geoversion/coverage.svg?branch=develop)](https://codecov.io/github/emarginatus/geoversion?branch=develop) | ![codecov.io](https://codecov.io/github/emarginatus/geoversion/branch.svg?branch=develop) |
 
 Store spatial objects from the sp package into a database while maintaining the version history. A specific version of the spatial object can be retrieved.
