@@ -21,5 +21,5 @@ knitr::opts_chunk$set(
 
 Store spatial objects from the sp package into a database while maintaining the version history. A specific version of the spatial object can be retrieved.
 
-```{r child="vignettes/details.Rmd"}
+```{r child="vignettes/child/details.Rmd"}
 ```
