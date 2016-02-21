@@ -17,9 +17,12 @@ Imports:
     sp,
     tidyr
 Suggests:
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 Collate:
     'as_sp.R'
     'geoversion_class.R'
     'combine.R'
     'convert_polygon.R'
+VignetteBuilder: knitr
