@@ -11,15 +11,17 @@ License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
 Imports:
+    DBI,
     digest,
     dplyr,
     methods,
     sp,
     tidyr
 Suggests:
-    testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    RSQLite,
+    testthat
 Collate:
     'as_sp.R'
     'geoversion_class.R'
