@@ -4,8 +4,8 @@ author: "Thierry Onkelinx"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{geoversion: a package to store and retrieve spatial objects with their history}
   %\VignetteEncoding{UTF-8}
 ---
 
