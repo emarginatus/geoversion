@@ -11,6 +11,7 @@ License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
 Imports:
+    assertthat,
     DBI,
     digest,
     dplyr,
@@ -27,4 +28,5 @@ Collate:
     'geoversion_class.R'
     'combine.R'
     'convert_polygon.R'
+    'setup_db.R'
 VignetteBuilder: knitr
