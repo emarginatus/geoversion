@@ -78,6 +78,10 @@ test_that(
       poly_c <- convert(sppolydf, id = "PermanentID"),
       "geoVersion"
     )
+    expect_is(
+      poly_c <- convert(sppolydf2, id = "PermanentID"),
+      "geoVersion"
+    )
     expect_named(
       poly_c@Coordinates,
       c("Hash", "Order", "X", "Y")
