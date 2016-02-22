@@ -78,6 +78,10 @@ test_that(
       poly_c <- convert(sppolydf, id = "PermanentID"),
       "geoVersion"
     )
+    expect_is(
+      poly_c <- convert(sppolydf2, id = "PermanentID"),
+      "geoVersion"
+    )
     expect_named(
       poly_c@Coordinates,
       c("Hash", "Order", "X", "Y")
@@ -93,7 +97,7 @@ test_that(
 test_that(
   "different CRS return an error", {
     poly_c2 <- poly_c <- convert(polygon[[1]])
-    poly_c2@CRS <- CRS("+proj=longlat +datum=WGS84")
+    poly_c2@CRS <- sp::CRS("+proj=longlat +datum=WGS84")
     expect_error(
       combine(poly_c, poly_c2),
       "CRS not unique"

@@ -1,0 +1,31 @@
+# Convert a `SpatialPolygonsDataFrame` object into a `geoVersion` object
+
+```{r create_polygon}
+library(sp)
+data(meuse.riv)
+meuse.sr <- SpatialPolygonsDataFrame(
+  SpatialPolygons(
+    list(
+      Polygons(list(Polygon(meuse.riv)), "meuse.riv")
+    )
+  ),
+  data = data.frame(StableID = 5, Name = "Meuse", Extra = pi),
+  match.ID = FALSE
+)
+spplot(meuse.sr, zcol = "Extra")
+```
+
+```{r polygon_geoversion}
+library(geoversion)
+gv <- convert(object = meuse.sr, id = "StableID")
+str(gv)
+```
+
+# Convert a `geoVersion` object in to a `SpatialPolygonsDataFrame`
+
+```{r geoversion_polygon}
+gv.sp <- as_sp(gv)
+str(gv.sp)
+spplot(gv.sp, zcol = "Extra")
+```
+

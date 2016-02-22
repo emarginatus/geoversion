@@ -76,10 +76,18 @@ setMethod(
       group_by_(~Hash) %>%
       summarise_(
         Features = ~sha1(sort(Feature))
-      ) %>%
-      mutate_(
-        ID = ~object@data[Hash, id]
       )
+    if (isTRUE(all.equal(rownames(object@data), hash$Hash))) {
+      hash <- hash %>%
+        mutate_(
+          ID = ~object@data[Hash, id]
+        )
+    } else {
+      hash <- hash %>%
+        mutate_(
+          ID = ~object@data[, id]
+        )
+    }
     poly@Features <- poly@Features %>%
       inner_join(
         hash,

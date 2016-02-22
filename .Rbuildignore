@@ -3,3 +3,4 @@
 ^wercker\.yml$
 ^README\.Rmd$
 ^README-.*\.png$
+^\.lintr$

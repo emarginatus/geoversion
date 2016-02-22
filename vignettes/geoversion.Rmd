@@ -1,0 +1,13 @@
+---
+title: "geoversion: a package to store and retrieve spatial objects with their history"
+author: "Thierry Onkelinx"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{geoversion: a package to store and retrieve spatial objects with their history}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r child="child/details.Rmd"}
+```

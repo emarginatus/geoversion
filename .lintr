@@ -1,0 +1,1 @@
+exclusions: list("R/as_sp.R" = 32:33, "tests/testthat/helper_create_polygon.R" = 37:38)

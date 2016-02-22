@@ -1,7 +1,11 @@
-library(sp)
 df <- data.frame(
   PermanentID = 1:2,
-  Text = c("A", "B")
+  Text = c("A", "B"),
+  Factor = factor(c("A", "B")),
+  Integer = 1:2,
+  Numeric = c(0.5, pi),
+  Logical = c(TRUE, FALSE),
+  stringsAsFactors = FALSE
 )
 polygon <- list(
   Polygon(
@@ -32,3 +36,5 @@ polygons <- list(
 )
 sppoly <- SpatialPolygons(polygons)
 sppolydf <- SpatialPolygonsDataFrame(sppoly, df)
+rownames(df) <- c("A", "B")
+sppolydf2 <- SpatialPolygonsDataFrame(sppoly, df, match.ID = FALSE)
