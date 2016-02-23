@@ -1,1 +1,1 @@
-exclusions: list("R/as_sp.R" = 32:33, "tests/testthat/helper_create_polygon.R" = 37:38)
+exclusions: list("R/as_sp.R" = 32:33, "R/setup_db.R" = 45, tests/testthat/helper_create_polygon.R" = c(37:38, 40))
