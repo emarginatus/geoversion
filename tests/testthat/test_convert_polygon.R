@@ -8,14 +8,14 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("Hash", "Order", "X", "Y")
+      c("hash", "order", "x", "y")
     )
     expect_named(
       poly_c@Feature,
-      c("Hash", "Type")
+      c("hash", "type")
     )
-    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
-    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+    expect_true(all(poly_c@Feature$hash %in% poly_c@Coordinates$hash))
+    expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
 test_that(
@@ -26,14 +26,14 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("Hash", "Order", "X", "Y")
+      c("hash", "order", "x", "y")
     )
     expect_named(
       poly_c@Feature,
-      c("Hash", "Type")
+      c("hash", "type")
     )
-    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
-    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+    expect_true(all(poly_c@Feature$hash %in% poly_c@Coordinates$hash))
+    expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
 test_that(
@@ -44,14 +44,14 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("Hash", "Order", "X", "Y")
+      c("hash", "order", "x", "y")
     )
     expect_named(
       poly_c@Feature,
-      c("Hash", "Type")
+      c("hash", "type")
     )
-    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
-    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+    expect_true(all(poly_c@Feature$hash %in% poly_c@Coordinates$hash))
+    expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
 test_that(
@@ -62,36 +62,36 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("Hash", "Order", "X", "Y")
+      c("hash", "order", "x", "y")
     )
     expect_named(
       poly_c@Feature,
-      c("Hash", "Type")
+      c("hash", "type")
     )
-    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
-    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+    expect_true(all(poly_c@Feature$hash %in% poly_c@Coordinates$hash))
+    expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
 test_that(
   "SpatialPolygonsDataFrame objects are converted", {
     expect_is(
-      poly_c <- convert(sppolydf, id = "PermanentID"),
+      poly_c <- convert(sppolydf, stable.id = "PermanentID"),
       "geoVersion"
     )
     expect_is(
-      poly_c <- convert(sppolydf2, id = "PermanentID"),
+      poly_c <- convert(sppolydf2, stable.id = "PermanentID"),
       "geoVersion"
     )
     expect_named(
       poly_c@Coordinates,
-      c("Hash", "Order", "X", "Y")
+      c("hash", "order", "x", "y")
     )
     expect_named(
       poly_c@Feature,
-      c("Hash", "Type")
+      c("hash", "type")
     )
-    expect_true(all(poly_c@Feature$Hash %in% poly_c@Coordinates$Hash))
-    expect_true(all(poly_c@Coordinates$Hash %in% poly_c@Feature$Hash))
+    expect_true(all(poly_c@Feature$hash %in% poly_c@Coordinates$hash))
+    expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
 test_that(

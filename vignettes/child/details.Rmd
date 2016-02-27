@@ -17,7 +17,7 @@ spplot(meuse.sr, zcol = "Extra")
 
 ```{r polygon_geoversion}
 library(geoversion)
-gv <- convert(object = meuse.sr, id = "StableID")
+gv <- convert(object = meuse.sr, stable.id = "StableID")
 str(gv)
 ```
 

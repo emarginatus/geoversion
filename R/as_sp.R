@@ -6,32 +6,32 @@
 #' @importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame
 as_sp <- function(x){
   attribute <- x@Attribute %>%
-    select_(~ID, ~Name) %>%
+    select_(~id, ~name) %>%
     inner_join(
       x@AttributeValue,
-      by = c("ID" = "Attribute")
+      by = c("id" = "attribute")
     ) %>%
-    select_(~-ID) %>%
-    spread_(key_col = "Name", value_col = "Value", convert = TRUE) %>%
-    inner_join(x@LayerElement, by = c("Element" = "ID"))
-  rownames(attribute) <- attribute$Features
+    select_(~-id) %>%
+    spread_(key_col = "name", value_col = "value", convert = TRUE) %>%
+    inner_join(x@LayerElement, by = c("element" = "id"))
+  rownames(attribute) <- attribute$features
   polygons <- x@Feature %>%
-    inner_join(x@Coordinates, by = "Hash") %>%
-    group_by_(~Hash) %>%
-    arrange_(~Order) %>%
+    inner_join(x@Coordinates, by = "hash") %>%
+    group_by_(~hash) %>%
+    arrange_(~order) %>%
     summarise_(
-      Polygon = ~list(
-        Polygon(cbind(X, Y), hole = Type == "H")
+      polygon = ~list(
+        Polygon(cbind(x, y), hole = type == "H")
       )
     ) %>%
-    inner_join(x@Features, by = c("Hash" = "Feature")) %>%
-    group_by_(~Hash.y) %>%
+    inner_join(x@Features, by = c("hash" = "feature")) %>%
+    group_by_(~hash.y) %>%
     summarise_(
-      Polygons = ~list(Polygons(Polygon, ID = unique(Hash.y)))
+      polygons = ~list(Polygons(polygon, ID = unique(hash.y)))
     )
-  SpatialPolygons(polygons$Polygons, proj4string = x@CRS) %>% #nolint
+  SpatialPolygons(polygons$polygons, proj4string = x@CRS) %>% #nolint
     SpatialPolygonsDataFrame( #nolint
       data = attribute %>%
-        select_(~-Features, ID = ~Element)
+        select_(~-features, ID = ~element)
     )
 }
