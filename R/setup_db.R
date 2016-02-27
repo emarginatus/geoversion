@@ -26,8 +26,8 @@ setup_db <- function(connection){
     element = data.frame(
       id = integer(0),
       features = character(0),
-      add = numeric(0),
-      remove = numeric(0),
+      spawn = numeric(0),
+      destroy = numeric(0),
       stringsAsFactors = FALSE
     ),
     attribute = data.frame(
@@ -40,8 +40,8 @@ setup_db <- function(connection){
       element = character(0),
       attribute = character(0),
       value = character(0),
-      add = numeric(0),
-      remove = numeric(0),
+      spawn = numeric(0),
+      destroy = numeric(0),
       stringsAsFactors = FALSE
     )
   )
