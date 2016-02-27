@@ -29,8 +29,8 @@ as_sp <- function(x){
     summarise_(
       Polygons = ~list(Polygons(Polygon, ID = unique(Hash.y)))
     )
-  SpatialPolygons(polygons$Polygons, proj4string = x@CRS) %>%
-    SpatialPolygonsDataFrame(
+  SpatialPolygons(polygons$Polygons, proj4string = x@CRS) %>% #nolint
+    SpatialPolygonsDataFrame( #nolint
       data = attribute %>%
         select_(~-Features, ID = ~Element)
     )

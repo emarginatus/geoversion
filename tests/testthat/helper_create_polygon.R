@@ -34,7 +34,7 @@ polygons <- list(
   Polygons(polygon[1], 1),
   Polygons(polygon[2:3], 2)
 )
-sppoly <- SpatialPolygons(polygons)
-sppolydf <- SpatialPolygonsDataFrame(sppoly, df)
+sppoly <- SpatialPolygons(polygons) #nolint
+sppolydf <- SpatialPolygonsDataFrame(sppoly, df) #nolint
 rownames(df) <- c("A", "B")
-sppolydf2 <- SpatialPolygonsDataFrame(sppoly, df, match.ID = FALSE)
+sppolydf2 <- SpatialPolygonsDataFrame(sppoly, df, match.ID = FALSE) #nolint
