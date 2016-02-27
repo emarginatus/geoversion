@@ -19,7 +19,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "attributevalue"),
-      c("element", "attribute", "value")
+      c("element", "attribute", "value", "add", "remove")
     )
     expect_identical(
       DBI::dbListFields(connection, "coordinates"),
@@ -27,7 +27,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "element"),
-      c("id", "features")
+      c("id", "features", "add", "remove")
     )
     expect_identical(
       DBI::dbListFields(connection, "feature"),
