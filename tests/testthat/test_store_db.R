@@ -47,7 +47,7 @@ test_that("it stores a geoVersion correctly in an empty database", {
 })
 test_that(
   "no change when the geoVersion equals the current version in the database", {
-  gv <- convert(object = sppolydf[1, ], stable.id = "PermanentID")
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
   store(x = gv, connection = connection)
   element <- dbReadTable(connection, "element") #nolint
