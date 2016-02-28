@@ -95,3 +95,7 @@ test_that(
 
   expect_identical(element$spawn, attributevalue$spawn)
 })
+test_that("it handles the removal of elements", {
+  gv <- convert(object = sppolydf[1, ], stable.id = "PermanentID")
+  store(x = gv, connection = connection)
+})

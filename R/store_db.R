@@ -11,6 +11,27 @@ store <- function(x, connection){
     "SELECT id, features, spawn, destroy FROM element WHERE destroy IS NULL"
   ) %>%
     full_join(x@LayerElement, by = "id")
+  old <- element %>%
+    filter_(~is.na(features.y)) %>%
+    mutate_(
+      sql = ~sprintf("
+UPDATE
+  element
+SET
+  destroy = %f
+WHERE
+  id = %i AND features = '%s' AND destroy IS NULL",
+        timestamp,
+        id,
+        features.x
+      )
+    )
+  sapply(
+    old$sql,
+    function(statement){
+      dbGetQuery(connection, statement) #nolint
+    }
+  )
   new.element <- element %>%
     filter_(~is.na(features.x)) %>%
     mutate_(spawn = timestamp, destroy = NA) %>%
@@ -52,6 +73,27 @@ store <- function(x, connection){
       destroy IS NULL"
   ) %>%
     full_join(x@AttributeValue, by = c("element", "attribute"))
+  old <- attributevalue %>%
+    filter_(~is.na(value.y)) %>%
+    mutate_(
+      sql = ~sprintf("
+UPDATE
+  attributevalue
+SET
+  destroy = %f
+WHERE
+  element = %i AND attribute = '%s' AND destroy IS NULL",
+        timestamp,
+        element,
+        attribute
+      )
+    )
+  sapply(
+    old$sql,
+    function(statement){
+      dbGetQuery(connection, statement) #nolint
+    }
+  )
   attributevalue %>%
     filter_(~is.na(value.x)) %>%
     mutate_(spawn = timestamp, destroy = NA) %>%
