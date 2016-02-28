@@ -2,7 +2,7 @@ context("store geoVersion in a database")
 test_that("it stores a geoVersion correctly in an empty database", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   store(x = gv, connection = connection)
-  element <- dbReadTable(connection, "element")
+  element <- dbReadTable(connection, "element") #nolint
   expect_identical(
     element %>% select_(~id, ~features),
     gv@LayerElement
@@ -13,16 +13,16 @@ test_that("it stores a geoVersion correctly in an empty database", {
   expect_false(is.na(element$spawn))
   expect_true(is.na(element$destroy))
 
-  features <- dbReadTable(connection, "features")
+  features <- dbReadTable(connection, "features") #nolint
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature")
+  feature <- dbReadTable(connection, "feature") #nolint
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates")
+  coordinates <- dbReadTable(connection, "coordinates") #nolint
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute")
+  attribute <- dbReadTable(connection, "attribute") #nolint
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -31,7 +31,7 @@ test_that("it stores a geoVersion correctly in an empty database", {
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue")
+  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
   expect_identical(
     attributevalue %>%
       select_(~element, ~attribute, ~value),
@@ -49,7 +49,7 @@ test_that(
   "no change when the geoVersion equals the current version in the database", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, connection = connection)
-  element <- dbReadTable(connection, "element")
+  element <- dbReadTable(connection, "element") #nolint
   expect_identical(
     element %>% select_(~id, ~features),
     gv@LayerElement
@@ -61,16 +61,16 @@ test_that(
   expect_true(is.na(element$destroy))
   expect_less_than(element$spawn, timestamp)
 
-  features <- dbReadTable(connection, "features")
+  features <- dbReadTable(connection, "features") #nolint
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature")
+  feature <- dbReadTable(connection, "feature") #nolint
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates")
+  coordinates <- dbReadTable(connection, "coordinates") #nolint
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute")
+  attribute <- dbReadTable(connection, "attribute") #nolint
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -79,7 +79,7 @@ test_that(
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue")
+  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
   expect_identical(
     attributevalue %>%
       select_(~element, ~attribute, ~value),
