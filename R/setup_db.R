@@ -37,7 +37,7 @@ setup_db <- function(connection){
       stringsAsFactors = FALSE
     ),
     attributevalue = data.frame(
-      element = character(0),
+      element = integer(0),
       attribute = character(0),
       value = character(0),
       spawn = numeric(0),
