@@ -10,7 +10,9 @@ test_that(
       DBI::dbListTables(connection),
       c(
         "attribute", "attributevalue", "coordinates", "element", "feature",
-        "features"
+        "features", "staging_attribute", "staging_attributevalue",
+        "staging_coordinates", "staging_element", "staging_feature",
+        "staging_features"
       )
     )
     expect_identical(
@@ -18,23 +20,47 @@ test_that(
       c("id", "name", "type")
     )
     expect_identical(
+      DBI::dbListFields(connection, "attribute"),
+      DBI::dbListFields(connection, "staging_attribute")
+    )
+    expect_identical(
       DBI::dbListFields(connection, "attributevalue"),
       c("element", "attribute", "value", "spawn", "destroy")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "attributevalue"),
+      DBI::dbListFields(connection, "staging_attributevalue")
     )
     expect_identical(
       DBI::dbListFields(connection, "coordinates"),
       c("hash", "order", "x", "y")
     )
     expect_identical(
+      DBI::dbListFields(connection, "coordinates"),
+      DBI::dbListFields(connection, "staging_coordinates")
+    )
+    expect_identical(
       DBI::dbListFields(connection, "element"),
       c("id", "features", "spawn", "destroy")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "element"),
+      DBI::dbListFields(connection, "staging_element")
     )
     expect_identical(
       DBI::dbListFields(connection, "feature"),
       c("hash", "type")
     )
     expect_identical(
+      DBI::dbListFields(connection, "feature"),
+      DBI::dbListFields(connection, "staging_feature")
+    )
+    expect_identical(
       DBI::dbListFields(connection, "features"),
       c("hash", "feature")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "features"),
+      DBI::dbListFields(connection, "staging_features")
     )
 })
