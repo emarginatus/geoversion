@@ -45,6 +45,7 @@ test_that("it stores a geoVersion correctly in an empty database", {
 
   expect_identical(element$spawn, attributevalue$spawn)
 })
+
 test_that(
   "no change when the geoVersion equals the current version in the database", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
@@ -95,6 +96,7 @@ test_that(
 
   expect_identical(element$spawn, attributevalue$spawn)
 })
+
 test_that("it handles the removal of elements", {
   gv <- convert(object = sppolydf[1, ], stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
@@ -164,6 +166,92 @@ test_that("it handles the removal of elements", {
     c(TRUE, FALSE)
   )
   expect_more_than(attributevalue$destroy[2], timestamp)
+
+  expect_identical(element$spawn, attributevalue$spawn)
+  expect_identical(element$destroy, attributevalue$destroy)
+})
+
+test_that("store() re-uses features", {
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
+  timestamp <- as.numeric(Sys.time())
+  store(x = gv, connection = connection)
+
+  element <- dbReadTable(connection, "element") #nolint
+  expect_identical(
+    element %>%
+      group_by_(~features) %>%
+      summarise_(
+        N = ~n(),
+        destroyed = ~sum(is.na(destroy))
+      ) %>%
+      filter_(~N > 1) %>%
+      nrow(),
+    1L
+  )
+  expect_identical(
+    element %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~id, ~features),
+    gv@LayerElement
+  )
+  element <- element %>%
+    distinct_(~spawn, ~destroy)
+  expect_identical(nrow(element), 3L)
+  expect_false(unique(is.na(element$spawn)))
+  expect_identical(
+    is.na(element$destroy),
+    c(TRUE, FALSE, TRUE)
+  )
+
+  features <- dbReadTable(connection, "features") %>% #nolint
+    semi_join(
+      element %>%
+        filter_(~is.na(destroy)),
+      by = c("hash" = "features")
+    )
+  expect_identical(features, gv@Features)
+
+  feature <- dbReadTable(connection, "feature") %>% #nolint
+    semi_join(features, by = c("hash" = "feature"))
+  expect_identical(feature, gv@Feature)
+
+  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+    semi_join(feature, by = "hash")
+  expect_identical(coordinates, gv@Coordinates)
+
+  attribute <- dbReadTable(connection, "attribute") #nolint
+  expect_identical(
+    attribute %>%
+      arrange_(~id),
+    gv@Attribute %>%
+      select_(~id, ~name, ~type) %>%
+      arrange_(~id)
+  )
+
+  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  expect_identical(
+    attributevalue %>%
+      anti_join(element, by = c("element" = "id", "spawn", "destroy")) %>%
+      nrow(),
+    0L
+  )
+  expect_identical(
+    attributevalue %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
+  )
+  attributevalue <- attributevalue %>%
+    distinct_(~spawn, ~destroy)
+  expect_identical(nrow(attributevalue), 3L)
+  expect_false(unique(is.na(attributevalue$spawn)))
+  expect_identical(
+    is.na(attributevalue$destroy),
+    c(TRUE, FALSE, TRUE)
+  )
+  expect_more_than(attributevalue$spawn[3], timestamp)
 
   expect_identical(element$spawn, attributevalue$spawn)
   expect_identical(element$destroy, attributevalue$destroy)

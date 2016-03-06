@@ -28,7 +28,7 @@ setMethod(
       object@coords,
       stringsAsFactors = FALSE
     )
-    colnames(coordinates) <- c("hash", "order", "x", "y")
+    colnames(coordinates) <- c("hash", "succession", "x", "y")
     return(
       new(
         "geoVersion",

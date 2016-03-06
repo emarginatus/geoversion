@@ -8,7 +8,7 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_named(
       poly_c@Feature,
@@ -26,7 +26,7 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_named(
       poly_c@Feature,
@@ -44,7 +44,7 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_named(
       poly_c@Feature,
@@ -62,7 +62,7 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_named(
       poly_c@Feature,
@@ -84,7 +84,7 @@ test_that(
     )
     expect_named(
       poly_c@Coordinates,
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_named(
       poly_c@Feature,

@@ -8,14 +8,14 @@ setup_db <- function(connection){
   structure <- list(
     coordinates = data.frame(
       hash = character(0),
-      order = integer(0),
+      succession = integer(0),
       x = numeric(0),
       y = numeric(0),
       stringsAsFactors = FALSE
     ),
     staging_coordinates = data.frame(
       hash = character(0),
-      order = integer(0),
+      succession = integer(0),
       x = numeric(0),
       y = numeric(0),
       stringsAsFactors = FALSE

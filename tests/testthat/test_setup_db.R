@@ -33,7 +33,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "coordinates"),
-      c("hash", "order", "x", "y")
+      c("hash", "succession", "x", "y")
     )
     expect_identical(
       DBI::dbListFields(connection, "coordinates"),

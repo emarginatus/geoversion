@@ -18,7 +18,7 @@ as_sp <- function(x){
   polygons <- x@Feature %>%
     inner_join(x@Coordinates, by = "hash") %>%
     group_by_(~hash) %>%
-    arrange_(~order) %>%
+    arrange_(~succession) %>%
     summarise_(
       polygon = ~list(
         Polygon(cbind(x, y), hole = type == "H")

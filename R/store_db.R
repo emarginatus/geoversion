@@ -37,32 +37,115 @@ WHERE
     mutate_(spawn = timestamp, destroy = NA) %>%
     select_(~id, features = ~features.y, ~spawn, ~destroy)
   dbWriteTable(connection, "element", new.element, append = TRUE) #nolint
+
   new.features <- x@Features %>%
     semi_join(new.element, by = c("hash" = "features"))
   dbWriteTable( #nolint
     new.features,
     conn = connection,
-    name = "features",
-    append = TRUE
+    name = "staging_features",
+    overwrite = TRUE
   )
+  dbGetQuery( #nolint
+    connection, "
+INSERT INTO
+  features
+    SELECT
+      staging_features.hash, staging_features.feature
+    FROM
+      staging_features
+    LEFT JOIN
+      (
+        SELECT
+          hash, feature, 1 AS current
+        FROM
+          features
+      ) AS current
+    ON
+      staging_features.hash = current.hash AND
+      staging_features.feature = current.feature
+    WHERE current IS NULL")
+
   new.feature <- x@Feature %>%
     semi_join(new.features, by = c("hash" = "feature"))
   dbWriteTable( #nolint
     new.feature,
     conn = connection,
-    name = "feature",
-    append = TRUE
+    name = "staging_feature",
+    overwrite = TRUE
   )
+  dbGetQuery( #nolint
+    connection, "
+INSERT INTO
+  feature
+    SELECT
+      staging_feature.hash, staging_feature.type
+    FROM
+      staging_feature
+    LEFT JOIN
+      (
+        SELECT
+          hash, 1 AS current
+        FROM
+          feature
+      ) AS current
+    ON
+      staging_feature.hash = current.hash
+    WHERE current IS NULL")
+
   x@Coordinates %>%
     semi_join(new.feature, by = "hash") %>%
-    dbWriteTable(conn = connection, name = "coordinates", append = TRUE) #nolint
+    dbWriteTable( #nolint
+      conn = connection,
+      name = "staging_coordinates",
+      overwrite = TRUE
+    )
+
+  dbGetQuery( #nolint
+    connection, "
+INSERT INTO
+  coordinates
+    SELECT
+      staging_coordinates.hash, succession, x, y
+    FROM
+      staging_coordinates
+    LEFT JOIN
+      (
+        SELECT DISTINCT
+          hash, 1 AS current
+        FROM
+          coordinates
+      ) AS current
+    ON
+      staging_coordinates.hash = current.hash
+    WHERE current IS NULL")
+
   x@Attribute %>%
-    anti_join(
-      dbReadTable(conn = connection, name = "attribute"), #nolint
-      by = "id"
-    ) %>%
     select_(~id, ~name, ~type) %>%
-    dbWriteTable(conn = connection, name = "attribute", append = TRUE) #nolint
+    dbWriteTable( #nolint
+      conn = connection,
+      name = "staging_attribute",
+      overwrite = TRUE
+    )
+  dbGetQuery( #nolint
+    connection, "
+INSERT INTO
+  attribute
+    SELECT
+      staging_attribute.id, name, type
+    FROM
+      staging_attribute
+    LEFT JOIN
+      (
+        SELECT DISTINCT
+          id, 1 AS current
+        FROM
+          attribute
+      ) AS current
+    ON
+      staging_attribute.id = current.id
+    WHERE current IS NULL")
+
   attributevalue <- dbGetQuery( #nolint
     connection,
     "SELECT
