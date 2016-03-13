@@ -12,13 +12,13 @@ store <- function(x, connection){
   ) %>%
     full_join(x@LayerElement, by = "id")
   old <- element %>%
-    filter_(~is.na(features.y)) %>%
+    filter_(~is.na(features.y) | features.x != features.y) %>%
     mutate_(
       sql = ~sprintf("
 UPDATE
   element
 SET
-  destroy = %f
+  destroy = %.21f
 WHERE
   id = %i AND features = '%s' AND destroy IS NULL",
         timestamp,
@@ -33,7 +33,7 @@ WHERE
     }
   )
   new.element <- element %>%
-    filter_(~is.na(features.x)) %>%
+    filter_(~is.na(features.x) | features.x != features.y) %>%
     mutate_(spawn = timestamp, destroy = NA) %>%
     select_(~id, features = ~features.y, ~spawn, ~destroy)
   dbWriteTable(connection, "element", new.element, append = TRUE) #nolint
@@ -100,7 +100,6 @@ INSERT INTO
       name = "staging_coordinates",
       overwrite = TRUE
     )
-
   dbGetQuery( #nolint
     connection, "
 INSERT INTO
@@ -163,7 +162,7 @@ INSERT INTO
 UPDATE
   attributevalue
 SET
-  destroy = %f
+  destroy = %.21f
 WHERE
   element = %i AND attribute = '%s' AND destroy IS NULL",
         timestamp,
