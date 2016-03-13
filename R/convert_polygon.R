@@ -1,6 +1,6 @@
 #' Convert a spatial object
 #' @param object the object to convert
-#' @param id the name of the variable that holds the stable ID
+#' @param stable.id the name of the variable that holds the stable ID
 #' @name convert
 #' @rdname convert
 #' @exportMethod convert
@@ -8,7 +8,7 @@
 #' @importFrom methods setGeneric
 setGeneric(
   name = "convert",
-  def = function(object, id){
+  def = function(object, stable.id){
     standard.generic("convert") #nocov
   }
 )
@@ -20,22 +20,22 @@ setGeneric(
 setMethod(
   f = "convert",
   signature = "Polygon",
-  definition = function(object, id){
-    hash <- sha1(list(Hole = object@hole, Coords = object@coords))
+  definition = function(object, stable.id){
+    hash <- sha1(list(hole = object@hole, coords = object@coords))
     coordinates <- data.frame(
       hash,
       seq_len(nrow(object@coords)),
       object@coords,
       stringsAsFactors = FALSE
     )
-    colnames(coordinates) <- c("Hash", "Order", "X", "Y")
+    colnames(coordinates) <- c("hash", "succession", "x", "y")
     return(
       new(
         "geoVersion",
         Coordinates = coordinates,
         Feature = data.frame(
-          Hash = hash,
-          Type = ifelse(object@hole, "H", "S"),
+          hash = hash,
+          type = ifelse(object@hole, "H", "S"),
           stringsAsFactors = FALSE
         )
       )
@@ -49,11 +49,11 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "Polygons",
-  definition = function(object, id){
+  definition = function(object, stable.id){
     poly <- convert(object@Polygons)
     poly@Features <- data.frame(
-      Hash = object@ID,
-      Feature = poly@Feature$Hash,
+      hash = object@ID,
+      feature = poly@Feature$hash,
       stringsAsFactors = FALSE
     )
     return(poly)
@@ -69,58 +69,58 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "SpatialPolygonsDataFrame",
-  definition = function(object, id){
+  definition = function(object, stable.id){
     poly <- convert(object@polygons)
     poly@CRS <- object@proj4string
     hash <- poly@Features %>%
-      group_by_(~Hash) %>%
+      group_by_(~hash) %>%
       summarise_(
-        Features = ~sha1(sort(Feature))
+        features = ~sha1(sort(feature))
       )
-    if (isTRUE(all.equal(rownames(object@data), hash$Hash))) {
+    if (isTRUE(all.equal(rownames(object@data), hash$hash))) {
       hash <- hash %>%
         mutate_(
-          ID = ~object@data[Hash, id]
+          id = ~object@data[hash, stable.id]
         )
     } else {
       hash <- hash %>%
         mutate_(
-          ID = ~object@data[, id]
+          id = ~object@data[, stable.id]
         )
     }
     poly@Features <- poly@Features %>%
       inner_join(
         hash,
-        by = "Hash"
+        by = "hash"
       ) %>%
       select_(
-        Hash = ~Features,
-        ~Feature
+        hash = ~features,
+        ~feature
       )
     poly@LayerElement <- hash %>%
-      select_(~ID, ~Features) %>%
+      select_(~id, ~features) %>%
       as.data.frame()
     poly@Attribute <- data.frame(
-      Name = colnames(object@data),
-      Type = sapply(object@data, class),
+      name = colnames(object@data),
+      type = sapply(object@data, class),
       stringsAsFactors = FALSE
     ) %>%
-      filter_(~Name != id) %>%
+      filter_(~name != stable.id) %>%
       rowwise() %>%
       mutate_(
-        ID = ~sha1(list(Name = Name, Type = Type))
+        id = ~sha1(list(name = name, type = type))
       ) %>%
       as.data.frame()
     poly@AttributeValue <- object@data %>%
-      rename_(Element = id) %>%
-      group_by_(~Element) %>%
+      rename_(element = stable.id) %>%
+      group_by_(~element) %>%
       mutate_each(funs(as.character)) %>%
-      gather(key = "Name", value = "Value", na.rm = TRUE, -1) %>%
+      gather(key = "name", value = "value", na.rm = TRUE, -1) %>%
       inner_join(
         poly@Attribute,
-        by = "Name"
+        by = "name"
       ) %>%
-      select_(~Element, Attribute = ~ID, ~Value) %>%
+      select_(~element, attribute = ~id, ~value) %>%
       as.data.frame()
     return(poly)
   }
@@ -131,7 +131,7 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "list",
-  definition = function(object, id){
+  definition = function(object, stable.id){
     do.call(
       combine,
       lapply(object, convert)

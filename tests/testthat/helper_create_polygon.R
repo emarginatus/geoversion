@@ -1,10 +1,10 @@
 df <- data.frame(
-  PermanentID = 1:2,
-  Text = c("A", "B"),
-  Factor = factor(c("A", "B")),
-  Integer = 1:2,
-  Numeric = c(0.5, pi),
-  Logical = c(TRUE, FALSE),
+  PermanentID = 1:3,
+  Text = c("A", "B", "C"),
+  Factor = factor(c("A", "B", "C")),
+  Integer = 1:3,
+  Numeric = c(0.5, pi, log(pi)),
+  Logical = c(TRUE, FALSE, NA),
   stringsAsFactors = FALSE
 )
 polygon <- list(
@@ -32,9 +32,15 @@ polygon <- list(
 )
 polygons <- list(
   Polygons(polygon[1], 1),
-  Polygons(polygon[2:3], 2)
+  Polygons(polygon[2:3], 2),
+  Polygons(polygon[2], 3)
 )
-sppoly <- SpatialPolygons(polygons)
-sppolydf <- SpatialPolygonsDataFrame(sppoly, df)
-rownames(df) <- c("A", "B")
-sppolydf2 <- SpatialPolygonsDataFrame(sppoly, df, match.ID = FALSE)
+sppoly <- SpatialPolygons(polygons) #nolint
+sppolydf <- SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ]) #nolint
+sppolydf.bis <- SpatialPolygonsDataFrame( #nolint
+  sppoly[c(1, 3)],
+  df[1:2, ],
+  match.ID = FALSE
+)
+rownames(df) <- c("A", "B", "C")
+sppolydf2 <- SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ], match.ID = FALSE) #nolint

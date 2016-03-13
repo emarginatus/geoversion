@@ -19,37 +19,37 @@ setClass(
   ),
   prototype = prototype(
     Coordinates = data.frame(
-      Hash = character(0),
-      Order = integer(0),
-      X = numeric(0),
-      Y = numeric(0),
+      hash = character(0),
+      succession = integer(0),
+      x = numeric(0),
+      y = numeric(0),
       stringsAsFactors = FALSE
     ),
     Feature = data.frame(
-      Hash = character(0),
-      Type = character(0),
+      hash = character(0),
+      type = character(0),
       stringsAsFactors = FALSE
     ),
     Features = data.frame(
-      Hash = character(0),
-      Feature = character(0),
+      hash = character(0),
+      feature = character(0),
       stringsAsFactors = FALSE
     ),
     LayerElement = data.frame(
-      ID = integer(0),
-      Features = character(0),
+      id = integer(0),
+      features = character(0),
       stringsAsFactors = FALSE
     ),
     Attribute = data.frame(
-      ID = character(0),
-      Name = character(0),
-      Type = character(0),
+      id = character(0),
+      name = character(0),
+      type = character(0),
       stringsAsFactors = FALSE
     ),
     AttributeValue = data.frame(
-      Element = character(0),
-      Attribute = character(0),
-      Value = character(0),
+      element = character(0),
+      attribute = character(0),
+      value = character(0),
       stringsAsFactors = FALSE
     )
   )
@@ -59,10 +59,10 @@ setClass(
 setValidity(
   "geoVersion",
   function(object){
-    if (anyDuplicated(object@Feature$Hash)) {
+    if (anyDuplicated(object@Feature$hash)) {
       stop("Duplicated hashes in the Feature slot")
     }
-    if (any(!object@Feature$Type %in% c("S", "H"))) {
+    if (any(!object@Feature$type %in% c("S", "H"))) {
       stop("Feature type can be only 'S' or 'H'")
     }
   }

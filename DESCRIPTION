@@ -11,18 +11,24 @@ License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
 Imports:
+    assertthat,
+    DBI,
     digest,
     dplyr,
     methods,
     sp,
     tidyr
 Suggests:
-    testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    RSQLite,
+    testthat
 Collate:
     'as_sp.R'
     'geoversion_class.R'
     'combine.R'
     'convert_polygon.R'
+    'imports.R'
+    'setup_db.R'
+    'store_db.R'
 VignetteBuilder: knitr

@@ -27,6 +27,7 @@ setMethod(
       }
     ) %>%
       bind_rows() %>%
+      distinct_() %>%
       as.data.frame()
     feature <- lapply(
       list(...),
@@ -35,6 +36,7 @@ setMethod(
       }
     ) %>%
       bind_rows() %>%
+      distinct_() %>%
       as.data.frame()
     features <- lapply(
       list(...),
@@ -43,6 +45,7 @@ setMethod(
       }
     ) %>%
       bind_rows() %>%
+      distinct_() %>%
       as.data.frame()
     layer.element <- lapply(
       list(...),
@@ -51,6 +54,7 @@ setMethod(
       }
     ) %>%
       bind_rows() %>%
+      distinct_() %>%
       as.data.frame()
     attribute <- lapply(
       list(...),
@@ -68,6 +72,7 @@ setMethod(
       }
     ) %>%
       bind_rows() %>%
+      distinct_() %>%
       as.data.frame()
     crs <- lapply(
       list(...),
