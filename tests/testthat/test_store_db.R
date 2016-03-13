@@ -332,3 +332,82 @@ test_that("handle elements with change in features", {
     c(TRUE, FALSE, TRUE)
   )
 })
+
+test_that("handle elements with change in attributevalues", {
+  sppolydf.bis@data$Text[1] <- "C"
+  sppolydf.bis@data$Factor[2] <- NA
+  sppolydf.bis@data$Logical <- NULL
+  sppolydf.bis@data$Extra <- TRUE
+  gv <- convert(object = sppolydf.bis, stable.id = "PermanentID")
+  timestamp <- as.numeric(Sys.time())
+  store(x = gv, connection = connection)
+
+  element <- dbReadTable(connection, "element") #nolint
+  expect_identical(
+    element %>%
+      group_by_(~features) %>%
+      summarise_(
+        N = ~n(),
+        destroyed = ~sum(is.na(destroy))
+      ) %>%
+      filter_(~N > 1) %>%
+      nrow(),
+    1L
+  )
+  expect_identical(
+    element %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~id, ~features),
+    gv@LayerElement
+  )
+  element2 <- element %>%
+    distinct_(~spawn, ~destroy)
+  expect_identical(nrow(element2), 4L)
+  expect_false(unique(is.na(element2$spawn)))
+  expect_identical(
+    is.na(element2$destroy),
+    c(TRUE, FALSE, FALSE, TRUE)
+  )
+
+  features <- dbReadTable(connection, "features") %>% #nolint
+    semi_join(
+      element %>%
+        filter_(~is.na(destroy)),
+      by = c("hash" = "features")
+    )
+  expect_identical(features, gv@Features)
+
+  feature <- dbReadTable(connection, "feature") %>% #nolint
+    semi_join(features, by = c("hash" = "feature"))
+  expect_identical(feature, gv@Feature)
+
+  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+    semi_join(feature, by = "hash")
+  expect_identical(coordinates, gv@Coordinates)
+
+  attribute <- dbReadTable(connection, "attribute") #nolint
+  expect_identical(
+    gv@Attribute %>%
+      anti_join(attribute, by = c("id", "name", "type")) %>%
+      nrow(),
+    0L
+  )
+
+  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  expect_identical(
+    attributevalue %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
+  )
+  attributevalue <- attributevalue %>%
+    distinct_(~spawn, ~destroy)
+  expect_identical(nrow(attributevalue), 6L)
+  expect_false(unique(is.na(attributevalue$spawn)))
+  expect_identical(
+    is.na(attributevalue$destroy),
+    c(FALSE, FALSE, TRUE, TRUE, FALSE, TRUE)
+  )
+})

@@ -156,7 +156,7 @@ INSERT INTO
   ) %>%
     full_join(x@AttributeValue, by = c("element", "attribute"))
   old <- attributevalue %>%
-    filter_(~is.na(value.y)) %>%
+    filter_(~is.na(value.y) | value.x != value.y) %>%
     mutate_(
       sql = ~sprintf("
 UPDATE
@@ -177,7 +177,7 @@ WHERE
     }
   )
   attributevalue %>%
-    filter_(~is.na(value.x)) %>%
+    filter_(~is.na(value.x) | value.x != value.y) %>%
     mutate_(spawn = timestamp, destroy = NA) %>%
     select_(~element, ~attribute, value = ~value.y, ~spawn, ~destroy) %>%
     dbWriteTable( #nolint
