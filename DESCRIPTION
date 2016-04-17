@@ -1,5 +1,5 @@
 Package: geoversion
-Title: Store and read spatial objects with version history
+Title: Read and Store Spatial Objects with Version History
 Version: 0.0.0
 Authors@R: person("Thierry", "Onkelinx", email = "emarginatus@muscardinus.be", role = c("aut", "cre"))
 Description: Store spatial objects from the sp package into a database while
