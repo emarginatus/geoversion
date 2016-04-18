@@ -10,7 +10,7 @@ store <- function(x, name, connection){
   assert_that(inherits(x, "geoVersion"))
   assert_that(is.string(name))
   assert_that(inherits(connection, "DBIConnection"))
-  assert_that(dbIsValid(connection))
+  assert_that(dbIsValid(connection)) #nolint
 
   timestamp <- as.numeric(Sys.time())
 

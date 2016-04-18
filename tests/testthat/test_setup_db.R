@@ -10,9 +10,10 @@ test_that(
       DBI::dbListTables(connection),
       c(
         "attribute", "attributevalue", "coordinates", "element", "feature",
-        "features", "layer", "layerelement", "staging_attribute", "staging_attributevalue",
-        "staging_coordinates", "staging_element", "staging_feature",
-        "staging_features", "staging_layer", "staging_layerelement"
+        "features", "layer", "layerelement", "staging_attribute",
+        "staging_attributevalue", "staging_coordinates", "staging_element",
+        "staging_feature", "staging_features", "staging_layer",
+        "staging_layerelement"
       )
     )
     expect_identical(
