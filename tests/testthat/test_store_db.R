@@ -628,3 +628,143 @@ ON
     c(TRUE, FALSE, FALSE, FALSE, TRUE, TRUE)
   )
 })
+
+test_that("it re-uses features across layers", {
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
+  timestamp <- as.numeric(Sys.time())
+  store(x = gv, name = paste0(layername, 2), connection = connection)
+
+  element <- dbGetQuery( #nolint
+    connection, sprintf("
+SELECT
+  id,
+  features,
+  element.spawn,
+  element.destroy
+FROM
+  (
+    layer
+  INNER JOIN
+    layerelement
+  ON
+    layer.hash = layerelement.layer
+  )
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+WHERE
+  layer.name = '%s'",
+    paste0(layername, 2)
+    )
+  )
+  expect_identical(
+    element %>%
+      group_by_(~features) %>%
+      summarise_(
+        N = ~n(),
+        destroyed = ~sum(is.na(destroy))
+      ) %>%
+      filter_(~N > 1) %>%
+      nrow(),
+    0L
+  )
+  expect_identical(
+    element %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~id, ~features) %>%
+      arrange_(~id),
+    gv@LayerElement %>%
+      arrange_(~id)
+  )
+  element2 <- element %>%
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~id, ~spawn)
+  expect_identical(nrow(element2), 1L)
+  expect_false(unique(is.na(element2$spawn)))
+  expect_identical(
+    is.na(element2$destroy),
+    TRUE
+  )
+
+  features <- dbReadTable(connection, "features") %>% #nolint
+    semi_join(
+      element %>%
+        filter_(~is.na(destroy)),
+      by = c("hash" = "features")
+    ) %>%
+    arrange_(~hash)
+  expect_identical(
+    features,
+    gv@Features %>%
+      arrange_(~hash)
+  )
+
+  feature <- dbReadTable(connection, "feature") %>% #nolint
+    semi_join(features, by = c("hash" = "feature")) %>%
+    arrange_(~hash)
+  expect_identical(
+    feature,
+    gv@Feature %>%
+      arrange_(~hash)
+  )
+
+  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+    semi_join(feature, by = "hash") %>%
+    arrange_(~hash, ~succession)
+  expect_identical(
+    coordinates,
+    gv@Coordinates %>%
+      arrange_(~hash, ~succession)
+  )
+
+  attribute <- dbReadTable(connection, "attribute") #nolint
+  expect_identical(
+    gv@Attribute %>%
+      anti_join(attribute, by = c("id", "name", "type")) %>%
+      nrow(),
+    0L
+  )
+
+  attributevalue <- dbGetQuery( #nolint
+    connection, sprintf("
+SELECT
+  id AS element,
+  attribute,
+  value,
+  attributevalue.spawn,
+  attributevalue.destroy
+FROM
+  (
+    layer
+  INNER JOIN
+    layerelement
+  ON
+    layer.hash = layerelement.layer
+  )
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element AND
+  layer.name = '%s'",
+    paste0(layername, 2)
+    )
+  )
+  expect_identical(
+    attributevalue %>%
+      filter_(~is.na(destroy)) %>%
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
+  )
+  attributevalue <- attributevalue %>%
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~element, ~spawn)
+  expect_identical(nrow(attributevalue), 1L)
+  expect_false(unique(is.na(attributevalue$spawn)))
+  expect_identical(
+    is.na(attributevalue$destroy),
+    TRUE
+  )
+})

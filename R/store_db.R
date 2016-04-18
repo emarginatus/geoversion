@@ -73,26 +73,40 @@ WHERE
       append = TRUE
     )
 
-  element <- dbGetQuery( #nolint
-    connection, "
+  element <- sprintf("
 SELECT
+  layer,
   id,
   element.hash,
   features,
-  spawn,
-  destroy
+  element.spawn,
+  element.destroy
 FROM
-  layerelement
+  (
+    layer
+  INNER JOIN
+    layerelement
+  ON
+    layer.hash = layerelement.layer
+  )
 INNER JOIN
   element
 ON
   layerelement.hash = element.hash
 WHERE
-  destroy IS NULL"
-  ) %>%
+  element.destroy IS NULL AND
+  layer.name = '%s'",
+      name
+    ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
     full_join(x@LayerElement, by = "id") %>%
     rowwise() %>%
     mutate_(
+      layer = ~ifelse(
+        is.na(layer),
+        layerhash,
+        layer
+      ),
       hash = ~ifelse(
         is.na(hash),
         sha1(list(Layer = layerhash, ID = id)),
@@ -235,15 +249,31 @@ INSERT INTO
     WHERE current IS NULL")
 
 
-  attributevalue <- dbGetQuery( #nolint
-    connection,
-    "SELECT
-      element, attribute, value, spawn, destroy
-    FROM
-      attributevalue
-    WHERE
-      destroy IS NULL"
+  attributevalue <- sprintf("
+SELECT
+  element,
+  attribute,
+  value,
+  attributevalue.spawn AS spawn,
+  attributevalue.destroy AS destroy
+FROM
+  attributevalue
+INNER JOIN
+  (
+    layer
+  INNER JOIN
+    layerelement
+  ON
+    layer.hash = layerelement.layer
+  )
+ON
+  attributevalue.element = layerelement.hash
+WHERE
+  attributevalue.destroy IS NULL AND
+  layer.name = '%s'",
+    name
   ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
     full_join(
       x@AttributeValue %>%
         rowwise() %>%
@@ -281,6 +311,6 @@ WHERE
       conn = connection,
       name = "attributevalue",
       append = TRUE
-    ) #nolint
+    )
   return(invisible(NULL))
 }
