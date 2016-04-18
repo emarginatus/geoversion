@@ -17,6 +17,7 @@ setGeneric(
 #' @importFrom methods setMethod
 #' @importClassesFrom sp Polygon
 #' @importFrom digest sha1
+#' @importFrom methods new
 setMethod(
   f = "convert",
   signature = "Polygon",

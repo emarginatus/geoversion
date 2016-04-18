@@ -13,7 +13,7 @@ setGeneric(
 )
 
 #' @rdname combine
-#' @importFrom methods setMethod
+#' @importFrom methods setMethod new
 #' @importFrom dplyr %>% bind_rows distinct_
 #' @include geoversion_class.R
 setMethod(

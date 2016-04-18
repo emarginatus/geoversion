@@ -1,16 +1,105 @@
 #' store a geoVersion object
 #' @param x a geoVersion object
+#' @param name the name of the layer
 #' @param connection a DBIConnection
 #' @export
-#' @importFrom DBI dbGetQuery dbWriteTable dbReadTable
-#' @importFrom dplyr %>% full_join filter_ mutate_ select_ semi_join anti_join
-store <- function(x, connection){
+#' @importFrom DBI dbGetQuery dbWriteTable dbReadTable dbIsValid
+#' @importFrom dplyr %>% full_join filter_ mutate_ select_ semi_join anti_join rowwise transmute_
+#' @importFrom assertthat assert_that is.string
+store <- function(x, name, connection){
+  assert_that(inherits(x, "geoVersion"))
+  assert_that(is.string(name))
+  assert_that(inherits(connection, "DBIConnection"))
+  assert_that(dbIsValid(connection))
+
   timestamp <- as.numeric(Sys.time())
-  element <- dbGetQuery( #nolint
-    connection,
-    "SELECT id, features, spawn, destroy FROM element WHERE destroy IS NULL"
+
+  if (all(x@Feature$type %in% c("S", "H"))) {
+    type <- "S"
+  } else {
+    x@Feature$type %>%
+      unique() %>%
+      sort() %>%
+      paste(collapse = ", ") %>%
+      sprintf(
+        fmt = "storing geoVersion with feature types %s not yet handled"
+      ) %>%
+      stop(call. = FALSE)
+  }
+  layerhash <- sprintf("
+SELECT
+  hash
+FROM
+  layer
+WHERE
+  name = '%s' AND
+  type = '%s' AND
+  destroy IS NULL",
+    name,
+    type
   ) %>%
-    full_join(x@LayerElement, by = "id")
+    dbGetQuery(conn = connection) #nolint
+  if (nrow(layerhash) == 0) {
+    layerhash <- sha1(list(Name = name, Type = type, Spawn = timestamp))
+    data.frame(
+      hash = layerhash,
+      name = name,
+      type = type,
+      spawn = timestamp,
+      destroy = NA_real_,
+      stringsAsFactors = FALSE
+    ) %>%
+      dbWriteTable(conn = connection, name = "layer", append = TRUE) #nolint
+  } else {
+    layerhash <- layerhash$hash
+  }
+
+  sprintf(
+    "SELECT id, hash FROM layerelement WHERE layer = '%s'",
+    layerhash
+  ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
+    anti_join(x = x@LayerElement, by = "id") %>%
+    rowwise() %>%
+    transmute_(
+      layer = ~layerhash,
+      ~id,
+      hash = ~sha1(list(Layer = layer, ID = id))
+    ) %>%
+    as.data.frame() %>%
+    dbWriteTable( #nolint
+      conn = connection,
+      name = "layerelement",
+      append = TRUE
+    )
+
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  element.hash,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+WHERE
+  destroy IS NULL"
+  ) %>%
+    full_join(x@LayerElement, by = "id") %>%
+    rowwise() %>%
+    mutate_(
+      hash = ~ifelse(
+        is.na(hash),
+        sha1(list(Layer = layerhash, ID = id)),
+        hash
+      )
+    ) %>%
+    as.data.frame()
   old <- element %>%
     filter_(~is.na(features.y) | features.x != features.y) %>%
     mutate_(
@@ -20,9 +109,9 @@ UPDATE
 SET
   destroy = %.21f
 WHERE
-  id = %i AND features = '%s' AND destroy IS NULL",
+  hash = '%s' AND features = '%s' AND destroy IS NULL",
         timestamp,
-        id,
+        hash,
         features.x
       )
     )
@@ -34,8 +123,8 @@ WHERE
   )
   new.element <- element %>%
     filter_(~is.na(features.x) | features.x != features.y) %>%
-    mutate_(spawn = timestamp, destroy = NA) %>%
-    select_(~id, features = ~features.y, ~spawn, ~destroy)
+    mutate_(spawn = timestamp, destroy = NA_real_) %>%
+    select_(~hash, features = ~features.y, ~spawn, ~destroy)
   dbWriteTable(connection, "element", new.element, append = TRUE) #nolint
 
   new.features <- x@Features %>%
@@ -145,6 +234,7 @@ INSERT INTO
       staging_attribute.id = current.id
     WHERE current IS NULL")
 
+
   attributevalue <- dbGetQuery( #nolint
     connection,
     "SELECT
@@ -154,7 +244,14 @@ INSERT INTO
     WHERE
       destroy IS NULL"
   ) %>%
-    full_join(x@AttributeValue, by = c("element", "attribute"))
+    full_join(
+      x@AttributeValue %>%
+        rowwise() %>%
+        mutate_(
+          element = ~sha1(list(Layer = layerhash, ID = element))
+        ),
+      by = c("element", "attribute")
+    )
   old <- attributevalue %>%
     filter_(~is.na(value.y) | value.x != value.y) %>%
     mutate_(
@@ -164,7 +261,7 @@ UPDATE
 SET
   destroy = %.21f
 WHERE
-  element = %i AND attribute = '%s' AND destroy IS NULL",
+  element = '%s' AND attribute = '%s' AND destroy IS NULL",
         timestamp,
         element,
         attribute
@@ -178,7 +275,7 @@ WHERE
   )
   attributevalue %>%
     filter_(~is.na(value.x) | value.x != value.y) %>%
-    mutate_(spawn = timestamp, destroy = NA) %>%
+    mutate_(spawn = timestamp, destroy = NA_real_) %>%
     select_(~element, ~attribute, value = ~value.y, ~spawn, ~destroy) %>%
     dbWriteTable( #nolint
       conn = connection,

@@ -1,10 +1,26 @@
 context("store geoVersion in a database")
+layername <- "test"
 test_that("it stores a geoVersion correctly in an empty database", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
-  store(x = gv, connection = connection)
-  element <- dbReadTable(connection, "element") #nolint
+  store(x = gv, name = layername, connection = connection)
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
-    element %>% select_(~id, ~features),
+    element %>%
+      select_(~id, ~features) %>%
+      arrange_(~id),
     gv@LayerElement
   )
   element <- element %>%
@@ -31,11 +47,27 @@ test_that("it stores a geoVersion correctly in an empty database", {
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
-      select_(~element, ~attribute, ~value),
-    gv@AttributeValue
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
     distinct_(~spawn, ~destroy)
@@ -50,10 +82,25 @@ test_that(
   "no change when the geoVersion equals the current version in the database", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
-  store(x = gv, connection = connection)
-  element <- dbReadTable(connection, "element") #nolint
+  store(x = gv, name = layername, connection = connection)
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
-    element %>% select_(~id, ~features),
+    element %>%
+      select_(~id, ~features) %>%
+      arrange_(~id),
     gv@LayerElement
   )
   element <- element %>%
@@ -81,11 +128,27 @@ test_that(
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
-      select_(~element, ~attribute, ~value),
-    gv@AttributeValue
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
     distinct_(~spawn, ~destroy)
@@ -100,9 +163,22 @@ test_that(
 test_that("it handles the removal of elements", {
   gv <- convert(object = sppolydf[1, ], stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
-  store(x = gv, connection = connection)
+  store(x = gv, name = layername, connection = connection)
 
-  element <- dbReadTable(connection, "element") #nolint
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
@@ -110,7 +186,8 @@ test_that("it handles the removal of elements", {
     gv@LayerElement
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~id)
   expect_identical(nrow(element), 2L)
   expect_false(unique(is.na(element$spawn)))
   expect_identical(
@@ -144,7 +221,21 @@ test_that("it handles the removal of elements", {
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
       anti_join(element, by = c("element" = "id", "spawn", "destroy")) %>%
@@ -154,11 +245,14 @@ test_that("it handles the removal of elements", {
   expect_identical(
     attributevalue %>%
       filter_(~is.na(destroy)) %>%
-      select_(~element, ~attribute, ~value),
-    gv@AttributeValue
+      select_(~element, ~attribute, ~value) %>%
+      arrange_(~element, ~attribute),
+    gv@AttributeValue %>%
+      arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~element, ~attribute)
   expect_identical(nrow(attributevalue), 2L)
   expect_false(unique(is.na(attributevalue$spawn)))
   expect_identical(
@@ -174,9 +268,22 @@ test_that("it handles the removal of elements", {
 test_that("store() re-uses features", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
-  store(x = gv, connection = connection)
+  store(x = gv, name = layername, connection = connection)
 
-  element <- dbReadTable(connection, "element") #nolint
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -191,11 +298,14 @@ test_that("store() re-uses features", {
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features),
-    gv@LayerElement
+      select_(~id, ~features) %>%
+      arrange_(~id),
+    gv@LayerElement %>%
+      arrange_(~id)
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~id, ~spawn)
   expect_identical(nrow(element), 3L)
   expect_false(unique(is.na(element$spawn)))
   expect_identical(
@@ -228,7 +338,21 @@ test_that("store() re-uses features", {
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
       anti_join(element, by = c("element" = "id", "spawn", "destroy")) %>%
@@ -244,7 +368,8 @@ test_that("store() re-uses features", {
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~element, ~attribute, ~spawn)
   expect_identical(nrow(attributevalue), 3L)
   expect_false(unique(is.na(attributevalue$spawn)))
   expect_identical(
@@ -257,12 +382,25 @@ test_that("store() re-uses features", {
   expect_identical(element$destroy, attributevalue$destroy)
 })
 
-test_that("handle elements with change in features", {
+test_that("handle elements with changes in features", {
   gv <- convert(object = sppolydf.bis, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
-  store(x = gv, connection = connection)
+  store(x = gv, name = layername, connection = connection)
 
-  element <- dbReadTable(connection, "element") #nolint
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -277,11 +415,14 @@ test_that("handle elements with change in features", {
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features),
-    gv@LayerElement
+      select_(~id, ~features) %>%
+      arrange_(~id),
+    gv@LayerElement %>%
+      arrange_(~id)
   )
   element2 <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~id, ~spawn)
   expect_identical(nrow(element2), 4L)
   expect_false(unique(is.na(element2$spawn)))
   expect_identical(
@@ -294,8 +435,13 @@ test_that("handle elements with change in features", {
       element %>%
         filter_(~is.na(destroy)),
       by = c("hash" = "features")
-    )
-  expect_identical(features, gv@Features)
+    ) %>%
+    arrange_(~hash, ~feature)
+  expect_identical(
+    features,
+    gv@Features %>%
+      arrange_(~hash, ~feature)
+  )
 
   feature <- dbReadTable(connection, "feature") %>% #nolint
     semi_join(features, by = c("hash" = "feature"))
@@ -314,7 +460,21 @@ test_that("handle elements with change in features", {
       arrange_(~id)
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
       filter_(~is.na(destroy)) %>%
@@ -324,7 +484,8 @@ test_that("handle elements with change in features", {
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~element, ~attribute, ~spawn)
   expect_identical(nrow(attributevalue), 3L)
   expect_false(unique(is.na(attributevalue$spawn)))
   expect_identical(
@@ -340,9 +501,22 @@ test_that("handle elements with change in attributevalues", {
   sppolydf.bis@data$Extra <- TRUE
   gv <- convert(object = sppolydf.bis, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
-  store(x = gv, connection = connection)
+  store(x = gv, name = layername, connection = connection)
 
-  element <- dbReadTable(connection, "element") #nolint
+  element <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id,
+  features,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  element
+ON
+  layerelement.hash = element.hash
+  ")
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -357,11 +531,14 @@ test_that("handle elements with change in attributevalues", {
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features),
-    gv@LayerElement
+      select_(~id, ~features) %>%
+      arrange_(~id),
+    gv@LayerElement %>%
+      arrange_(~id)
   )
   element2 <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~id, ~spawn)
   expect_identical(nrow(element2), 4L)
   expect_false(unique(is.na(element2$spawn)))
   expect_identical(
@@ -374,8 +551,13 @@ test_that("handle elements with change in attributevalues", {
       element %>%
         filter_(~is.na(destroy)),
       by = c("hash" = "features")
-    )
-  expect_identical(features, gv@Features)
+    ) %>%
+    arrange_(~hash)
+  expect_identical(
+    features,
+    gv@Features %>%
+    arrange_(~hash)
+  )
 
   feature <- dbReadTable(connection, "feature") %>% #nolint
     semi_join(features, by = c("hash" = "feature"))
@@ -393,7 +575,21 @@ test_that("handle elements with change in attributevalues", {
     0L
   )
 
-  attributevalue <- dbReadTable(connection, "attributevalue") #nolint
+  attributevalue <- dbGetQuery( #nolint
+    connection, "
+SELECT
+  id AS element,
+  attribute,
+  value,
+  spawn,
+  destroy
+FROM
+  layerelement
+INNER JOIN
+  attributevalue
+ON
+  layerelement.hash = attributevalue.element"
+  )
   expect_identical(
     attributevalue %>%
       filter_(~is.na(destroy)) %>%
@@ -403,11 +599,12 @@ test_that("handle elements with change in attributevalues", {
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy) %>%
+    arrange_(~element, ~spawn)
   expect_identical(nrow(attributevalue), 6L)
   expect_false(unique(is.na(attributevalue$spawn)))
   expect_identical(
     is.na(attributevalue$destroy),
-    c(FALSE, FALSE, TRUE, TRUE, FALSE, TRUE)
+    c(TRUE, FALSE, FALSE, FALSE, TRUE, TRUE)
   )
 })
