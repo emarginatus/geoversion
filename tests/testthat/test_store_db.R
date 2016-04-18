@@ -444,12 +444,22 @@ ON
   )
 
   feature <- dbReadTable(connection, "feature") %>% #nolint
-    semi_join(features, by = c("hash" = "feature"))
-  expect_identical(feature, gv@Feature)
+    semi_join(features, by = c("hash" = "feature")) %>%
+    arrange_(~hash)
+  expect_identical(
+    feature,
+    gv@Feature %>%
+      arrange_(~hash)
+  )
 
   coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
-    semi_join(feature, by = "hash")
-  expect_identical(coordinates, gv@Coordinates)
+    semi_join(feature, by = "hash") %>%
+    arrange_(~hash, ~succession)
+  expect_identical(
+    coordinates,
+    gv@Coordinates %>%
+      arrange_(~hash, ~succession)
+  )
 
   attribute <- dbReadTable(connection, "attribute") #nolint
   expect_identical(
@@ -556,16 +566,26 @@ ON
   expect_identical(
     features,
     gv@Features %>%
-    arrange_(~hash)
+      arrange_(~hash)
   )
 
   feature <- dbReadTable(connection, "feature") %>% #nolint
-    semi_join(features, by = c("hash" = "feature"))
-  expect_identical(feature, gv@Feature)
+    semi_join(features, by = c("hash" = "feature")) %>%
+    arrange_(~hash)
+  expect_identical(
+    feature,
+    gv@Feature %>%
+      arrange_(~hash)
+  )
 
   coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
-    semi_join(feature, by = "hash")
-  expect_identical(coordinates, gv@Coordinates)
+    semi_join(feature, by = "hash") %>%
+    arrange_(~hash, ~succession)
+  expect_identical(
+    coordinates,
+    gv@Coordinates %>%
+      arrange_(~hash, ~succession)
+  )
 
   attribute <- dbReadTable(connection, "attribute") #nolint
   expect_identical(
