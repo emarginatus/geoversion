@@ -29,6 +29,7 @@ Collate:
     'combine.R'
     'convert_polygon.R'
     'imports.R'
+    'retrieve_db.R'
     'setup_db.R'
     'store_db.R'
 VignetteBuilder: knitr
