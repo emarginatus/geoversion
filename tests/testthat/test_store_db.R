@@ -24,7 +24,7 @@ ON
     gv@LayerElement
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy, .keep_all = TRUE)
   expect_identical(nrow(element), 1L)
   expect_false(is.na(element$spawn))
   expect_true(is.na(element$destroy))
@@ -70,7 +70,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy, .keep_all = TRUE)
   expect_identical(nrow(attributevalue), 1L)
   expect_false(is.na(attributevalue$spawn))
   expect_true(is.na(attributevalue$destroy))
@@ -104,7 +104,7 @@ ON
     gv@LayerElement
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy, .keep_all = TRUE)
   expect_identical(nrow(element), 1L)
   expect_false(is.na(element$spawn))
   expect_true(is.na(element$destroy))
@@ -151,7 +151,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy)
+    distinct_(~spawn, ~destroy, .keep_all = TRUE)
   expect_identical(nrow(attributevalue), 1L)
   expect_false(is.na(attributevalue$spawn))
   expect_true(is.na(attributevalue$destroy))
@@ -186,7 +186,7 @@ ON
     gv@LayerElement
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~id)
   expect_identical(nrow(element), 2L)
   expect_false(unique(is.na(element$spawn)))
@@ -251,7 +251,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~element, ~attribute)
   expect_identical(nrow(attributevalue), 2L)
   expect_false(unique(is.na(attributevalue$spawn)))
@@ -304,7 +304,7 @@ ON
       arrange_(~id)
   )
   element <- element %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~id, ~spawn)
   expect_identical(nrow(element), 3L)
   expect_false(unique(is.na(element$spawn)))
@@ -368,7 +368,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~element, ~attribute, ~spawn)
   expect_identical(nrow(attributevalue), 3L)
   expect_false(unique(is.na(attributevalue$spawn)))
@@ -421,7 +421,7 @@ ON
       arrange_(~id)
   )
   element2 <- element %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~id, ~spawn)
   expect_identical(nrow(element2), 4L)
   expect_false(unique(is.na(element2$spawn)))
@@ -494,7 +494,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~element, ~attribute, ~spawn)
   expect_identical(nrow(attributevalue), 3L)
   expect_false(unique(is.na(attributevalue$spawn)))
@@ -547,7 +547,7 @@ ON
       arrange_(~id)
   )
   element2 <- element %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~id, ~spawn)
   expect_identical(nrow(element2), 4L)
   expect_false(unique(is.na(element2$spawn)))
@@ -619,7 +619,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~element, ~spawn)
   expect_identical(nrow(attributevalue), 6L)
   expect_false(unique(is.na(attributevalue$spawn)))
@@ -678,7 +678,7 @@ WHERE
       arrange_(~id)
   )
   element2 <- element %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~id, ~spawn)
   expect_identical(nrow(element2), 1L)
   expect_false(unique(is.na(element2$spawn)))
@@ -759,7 +759,7 @@ ON
       arrange_(~element, ~attribute)
   )
   attributevalue <- attributevalue %>%
-    distinct_(~spawn, ~destroy) %>%
+    distinct_(~spawn, ~destroy, .keep_all = TRUE) %>%
     arrange_(~element, ~spawn)
   expect_identical(nrow(attributevalue), 1L)
   expect_false(unique(is.na(attributevalue$spawn)))
