@@ -768,3 +768,12 @@ ON
     TRUE
   )
 })
+
+test_that("it returns an error when using the wrong type", {
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
+  gv@Feature$type <- "junk"
+  expect_error(
+    store(gv, name = "junk", connection = connection),
+    "storing geoVersion with feature types junk not yet handled"
+  )
+})
