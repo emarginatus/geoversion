@@ -9,11 +9,11 @@ test_that(
     expect_identical(
       DBI::dbListTables(connection),
       c(
-        "attribute", "attributevalue", "coordinates", "element", "feature",
-        "features", "layer", "layerelement", "staging_attribute",
-        "staging_attributevalue", "staging_coordinates", "staging_element",
-        "staging_feature", "staging_features", "staging_layer",
-        "staging_layerelement"
+        "attribute", "attributevalue", "coordinates", "crs", "element",
+        "feature", "features", "layer", "layerelement", "staging_attribute",
+        "staging_attributevalue", "staging_coordinates", "staging_crs",
+        "staging_element", "staging_feature", "staging_features",
+        "staging_layer", "staging_layerelement"
       )
     )
     expect_identical(
@@ -67,6 +67,14 @@ test_that(
     expect_identical(
       DBI::dbListFields(connection, "layer"),
       c("hash", "name", "type", "spawn", "destroy")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "layer"),
+      DBI::dbListFields(connection, "staging_layer")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "crs"),
+      c("layer", "value", "spawn", "destroy")
     )
     expect_identical(
       DBI::dbListFields(connection, "layer"),
