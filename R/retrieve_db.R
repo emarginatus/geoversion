@@ -64,16 +64,18 @@ ON
     dbQuoteIdentifier(connection, layer)
   ) %>%
     dbGetQuery(conn = connection) %>%
-    group_by_(~id, ~feature) %>%
-    arrange_(~id, ~feature, ~succession) %>%
+    group_by_(~id, ~feature, ~type) %>%
+    arrange_(~id, ~feature, ~type, ~succession) %>%
     do_(
-      polygon = ~select_(., ~x, ~y) %>%
-        Polygon()
+      polygon = ~Polygon(
+        select_(.,~x, ~y),
+        hole = .$type[1] == "H"
+      )
     ) %>%
     ungroup() %>%
     group_by_(~id) %>%
     do_(
-      polygons = ~Polygons(srl = .$polygon, ID = .$id)
+      polygons = ~Polygons(srl = .$polygon, ID = .$id[1])
     ) %>%
     ungroup() %>%
     do_(

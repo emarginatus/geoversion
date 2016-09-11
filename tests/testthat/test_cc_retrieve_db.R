@@ -23,37 +23,48 @@ test_that("it retrieves a geoVersion correctly", {
     output@data[, colnames(sppolydf.bis@data)]
   )
   expect_identical(
-    sp::coordinates(output) %>%
+    rgeos::gCovers(sppolydf.bis, output, byid = TRUE) %>%
       unname(),
-    sp::coordinates(sppolydf.bis) %>%
-      unname()
+    sppolydf %>%
+      length() %>%
+      diag() %>%
+      `==`(1L)
   )
-  for (i in seq_along(sppolydf.bis@polygons)) {
-    x <- sppolydf.bis@polygons[[i]]
-    y <- output@polygons[[i]]
+  expect_identical(
+    rgeos::gCovers(output, sppolydf.bis, byid = TRUE) %>%
+      unname(),
+    sppolydf %>%
+      length() %>%
+      diag() %>%
+      `==`(1L)
+  )
+})
 
-    for (j in seq_along(x@Polygons)) {
-      expect_identical(
-        x@Polygons[[j]]@coords,
-        y@Polygons[[j]]@coords %>%
-          unname()
-      )
-      expect_identical(
-        x@Polygons[[j]]@hole,
-        y@Polygons[[j]]@hole
-      )
-      expect_identical(
-        x@Polygons[[j]]@ringDir,
-        y@Polygons[[j]]@ringDir
-      )
-      expect_identical(
-        x@Polygons[[j]]@labpt,
-        y@Polygons[[j]]@labpt
-      )
-      expect_identical(
-        x@Polygons[[j]]@area,
-        y@Polygons[[j]]@area
-      )
-    }
-  }
+test_that("retrieve handles holes in polygons", {
+  expect_is(
+    output <- retrieve(name = paste0(layername, 2), connection = connection),
+    "SpatialPolygonsDataFrame"
+  )
+
+  sppolydf@data$Factor <- factor(sppolydf@data$Factor)
+  expect_equal(
+    sppolydf@data,
+    output@data[, colnames(sppolydf@data)]
+  )
+  expect_identical(
+    rgeos::gCovers(sppolydf, output, byid = TRUE) %>%
+      unname(),
+    sppolydf %>%
+      length() %>%
+      diag() %>%
+      `==`(1L)
+  )
+  expect_identical(
+    rgeos::gCovers(output, sppolydf, byid = TRUE) %>%
+      unname(),
+    sppolydf %>%
+      length() %>%
+      diag() %>%
+      `==`(1L)
+  )
 })

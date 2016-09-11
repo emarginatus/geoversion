@@ -20,6 +20,7 @@ Imports:
     tidyr
 Suggests:
     knitr,
+    rgeos,
     rmarkdown,
     RSQLite,
     testthat
