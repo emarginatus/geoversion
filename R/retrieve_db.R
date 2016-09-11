@@ -3,9 +3,13 @@
 #' @export
 #' @importFrom DBI dbQuoteIdentifier dbGetQuery
 #' @importFrom dplyr %>% group_by_ arrange_ do_ select_ ungroup rename_ mutate_ mutate_at filter_ distinct_
-#' @importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame
+#' @importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame CRS
 #' @importFrom tidyr spread_
+#' @importFrom assertthat assert_that is.string
 retrieve <- function(name, connection){
+  assert_that(is.string(name))
+  assert_that(inherits(connection, "DBIConnection"))
+
   layer <- sprintf(
     "SELECT hash FROM layer WHERE name = %s AND destroy IS NULL",
     dbQuoteIdentifier(connection, name)
@@ -85,7 +89,7 @@ ON
 
   rawdata <- sprintf("
 SELECT
-  l.id AS id,
+  l.id AS PermanentID,
   a.name AS name,
   a.type AS type,
   av.value AS value
