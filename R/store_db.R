@@ -3,7 +3,7 @@
 #' @param name the name of the layer
 #' @param connection a DBIConnection
 #' @export
-#' @importFrom DBI dbGetQuery dbWriteTable dbReadTable dbIsValid
+#' @importFrom DBI dbGetQuery dbWriteTable dbReadTable dbIsValid dbQuoteString
 #' @importFrom dplyr %>% full_join filter_ mutate_ select_ semi_join anti_join rowwise transmute_
 #' @importFrom assertthat assert_that is.string
 store <- function(x, name, connection){
@@ -32,11 +32,11 @@ SELECT
 FROM
   layer
 WHERE
-  name = '%s' AND
-  type = '%s' AND
+  name = %s AND
+  type = %s AND
   destroy IS NULL",
-    name,
-    type
+    dbQuoteString(connection, name),
+    dbQuoteString(connection, type)
   ) %>%
     dbGetQuery(conn = connection) #nolint
   if (nrow(layerhash) == 0) {
@@ -54,9 +54,59 @@ WHERE
     layerhash <- layerhash$hash
   }
 
+  # compare exisiting CRS
+  compare.crs <- sprintf("
+SELECT
+  value,
+  spawn
+FROM
+  crs
+WHERE
+  layer = %s AND
+  destroy IS NULL",
+    dbQuoteString(connection, layerhash)
+  ) %>%
+    dbGetQuery(conn = connection) %>%
+    full_join(
+      data.frame(
+        value = x@CRS@projargs,
+        stringsAsFactors = FALSE
+      ),
+      by = "value"
+    )
+  if (nrow(compare.crs) > 1) {
+    sprintf("
+UPDATE
+  crs
+SET
+  destroy = %.21f
+WHERE
+  layer = %s AND
+  spawn = %.21f AND
+  destroy IS NULL
+",
+      timestamp,
+      dbQuoteString(conn = connection, layerhash),
+      max(compare.crs$spawn, na.rm = TRUE)
+    ) %>%
+      dbGetQuery(conn = connection)
+    compare.crs <- compare.crs %>%
+      filter_(~is.na(spawn))
+  }
+  if (is.na(compare.crs$spawn)) {
+    data.frame(
+      layer = layerhash,
+      value = x@CRS@projargs,
+      spawn = timestamp,
+      destroy = NA_real_,
+      stringsAsFactors = FALSE
+    ) %>%
+    dbWriteTable(conn = connection, name = "crs", append = TRUE) #nolint
+  }
+
   sprintf(
-    "SELECT id, hash FROM layerelement WHERE layer = '%s'",
-    layerhash
+    "SELECT id, hash FROM layerelement WHERE layer = %s",
+    dbQuoteString(connection, layerhash)
   ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     anti_join(x = x@LayerElement, by = "id") %>%
@@ -95,8 +145,8 @@ ON
   layerelement.hash = element.hash
 WHERE
   element.destroy IS NULL AND
-  layer.name = '%s'",
-      name
+  layer.name = %s",
+      dbQuoteString(connection, name)
     ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     full_join(x@LayerElement, by = "id") %>%
@@ -123,10 +173,10 @@ UPDATE
 SET
   destroy = %.21f
 WHERE
-  hash = '%s' AND features = '%s' AND destroy IS NULL",
+  hash = %s AND features = %s AND destroy IS NULL",
         timestamp,
-        hash,
-        features.x
+        dbQuoteString(connection, hash),
+        dbQuoteString(connection, features.x)
       )
     )
   sapply(
@@ -270,8 +320,8 @@ ON
   attributevalue.element = layerelement.hash
 WHERE
   attributevalue.destroy IS NULL AND
-  layer.name = '%s'",
-    name
+  layer.name = %s",
+    dbQuoteString(connection, name)
   ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     full_join(
@@ -291,10 +341,10 @@ UPDATE
 SET
   destroy = %.21f
 WHERE
-  element = '%s' AND attribute = '%s' AND destroy IS NULL",
+  element = %s AND attribute = %s AND destroy IS NULL",
         timestamp,
-        element,
-        attribute
+        dbQuoteString(connection, element),
+        dbQuoteString(connection, attribute)
       )
     )
   sapply(

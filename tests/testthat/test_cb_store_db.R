@@ -777,3 +777,126 @@ test_that("it returns an error when using the wrong type", {
     "storing geoVersion with feature types junk not yet handled"
   )
 })
+
+test_that("it sets and updates the correct CRS", {
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
+  store(x = gv, name = paste0(layername, "crs"), connection = connection)
+  stored <- sprintf("
+SELECT
+  layer.spawn AS layerspawn,
+  crs.value,
+  crs.spawn,
+  crs.destroy
+FROM
+  layer
+INNER JOIN
+  crs
+ON
+  layer.hash = crs.layer
+WHERE
+  name = %s AND
+  crs.destroy IS NULL
+",
+    dbQuoteString(conn = connection, paste0(layername, "crs"))
+  ) %>%
+    dbGetQuery(con = connection)
+  expect_identical(nrow(stored), 1L)
+  expect_equal(stored$layerspawn, stored$spawn)
+  expect_false(is.na(stored$spawn))
+  expect_true(is.na(stored$destroy))
+  expect_identical(stored$value, sppolydf@proj4string@projargs)
+
+  store(x = gv, name = paste0(layername, "crs"), connection = connection)
+  stored <- sprintf("
+SELECT
+  layer.spawn AS layerspawn,
+  crs.value,
+  crs.spawn,
+  crs.destroy
+FROM
+  layer
+INNER JOIN
+  crs
+ON
+  layer.hash = crs.layer
+WHERE
+  name = %s AND
+  crs.destroy IS NULL
+",
+    dbQuoteString(conn = connection, paste0(layername, "crs"))
+  ) %>%
+    dbGetQuery(con = connection)
+  expect_identical(nrow(stored), 1L)
+  expect_equal(stored$layerspawn, stored$spawn)
+  expect_false(is.na(stored$spawn))
+  expect_true(is.na(stored$destroy))
+  expect_identical(stored$value, sppolydf@proj4string@projargs)
+  stored <- sprintf("
+SELECT
+  layer.spawn AS layerspawn,
+  crs.value,
+  crs.spawn,
+  crs.destroy
+FROM
+  layer
+INNER JOIN
+  crs
+ON
+  layer.hash = crs.layer
+WHERE
+  name = %s AND
+  crs.destroy IS NOT NULL
+",
+    dbQuoteString(conn = connection, paste0(layername, "crs"))
+  ) %>%
+    dbGetQuery(con = connection)
+  expect_identical(nrow(stored), 0L)
+
+  sppolydf@proj4string <- CRS("+proj=longlat +datum=WGS84")
+  gv <- convert(object = sppolydf, stable.id = "PermanentID")
+  store(x = gv, name = paste0(layername, "crs"), connection = connection)
+  stored <- sprintf("
+SELECT
+  layer.spawn AS layerspawn,
+  crs.value,
+  crs.spawn,
+  crs.destroy
+FROM
+  layer
+INNER JOIN
+  crs
+ON
+  layer.hash = crs.layer
+WHERE
+  name = %s AND
+  crs.destroy IS NULL
+",
+    dbQuoteString(conn = connection, paste0(layername, "crs"))
+  ) %>%
+    dbGetQuery(con = connection)
+  expect_identical(nrow(stored), 1L)
+  expect_equal(stored$layerspawn, stored$spawn)
+  expect_false(is.na(stored$spawn))
+  expect_true(is.na(stored$destroy))
+  expect_identical(stored$value, sppolydf@proj4string@projargs)
+  stored <- sprintf("
+SELECT
+  layer.spawn AS layerspawn,
+  crs.value,
+  crs.spawn,
+  crs.destroy
+FROM
+  layer
+INNER JOIN
+  crs
+ON
+  layer.hash = crs.layer
+WHERE
+  name = %s AND
+  crs.destroy IS NOT NULL
+",
+    dbQuoteString(conn = connection, paste0(layername, "crs"))
+  ) %>%
+    dbGetQuery(con = connection)
+  expect_identical(nrow(stored), 1L)
+})
