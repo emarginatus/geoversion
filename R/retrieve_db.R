@@ -1,0 +1,230 @@
+#' Retrieve a spatial object from the database
+#' @inheritParams store
+#' @param timestamp The point in time at which the object should be return. Default to NA which implies the latest status.
+#' @export
+#' @importFrom DBI dbQuoteIdentifier dbGetQuery
+#' @importFrom dplyr %>% group_by_ arrange_ do_ select_ ungroup rename_ mutate_ mutate_at filter_ distinct_
+#' @importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame CRS
+#' @importFrom tidyr spread_
+#' @importFrom assertthat assert_that is.string is.number
+retrieve <- function(name, connection, timestamp = NA_real_){
+  assert_that(is.string(name))
+  assert_that(inherits(connection, "DBIConnection"))
+  assert_that(is.number(timestamp))
+
+  timerange <- function(name, timestamp, connection){
+    if (is.na(timestamp)) {
+      timerange <- sprintf(
+        "%s.destroy IS NULL",
+        dbQuoteIdentifier(conn = connection, name) #nolint
+      )
+    } else {
+      timerange <- sprintf(
+        "%s.spawn >= %.21f AND\n%.21f < %s.destroy",
+        dbQuoteIdentifier(conn = connection, name), #nolint
+        timestamp,
+        dbQuoteIdentifier(conn = connection, name), #nolint
+        timestamp
+      )
+    }
+  }
+
+  layer <- sprintf(
+    "SELECT hash FROM layer WHERE name = %s AND %s",
+    dbQuoteIdentifier(connection, name), #nolint
+    timerange("layer", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
+    "[["("hash") #nolint
+  if (length(layer) == 0) {
+    stop("There is no layer named '", name, "'")
+  }
+
+  layerelement <- sprintf("
+SELECT
+  le.id,
+  e.features
+FROM
+  layerelement AS le
+INNER JOIN
+  element AS e
+ON
+  le.hash = e.hash
+WHERE
+  layer = %s AND
+  %s",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  features <- sprintf("
+SELECT
+  ff.hash AS hash,
+  ff.feature AS feature
+FROM
+  (
+    SELECT
+      e.features
+    FROM
+      layerelement AS le
+    INNER JOIN
+      element AS e
+    ON
+      le.hash = e.hash
+    WHERE
+      layer = %s AND
+      %s
+  ) AS e0
+INNER JOIN
+  features AS ff
+ON
+  e0.features = ff.hash
+",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  feature <- sprintf("
+SELECT
+  f.hash AS hash,
+  f.type AS type
+FROM
+  (
+    (
+      SELECT
+        e.features
+      FROM
+        layerelement AS le
+      INNER JOIN
+        element AS e
+      ON
+        le.hash = e.hash
+      WHERE
+        layer = %s AND
+        %s
+    ) AS e0
+  INNER JOIN
+    features AS ff
+  ON
+    e0.features = ff.hash
+  )
+INNER JOIN
+  feature AS f
+ON
+  ff.feature = f.hash
+",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+
+  coordinates <- sprintf("
+SELECT
+  c.hash AS hash,
+  c.succession AS succession,
+  c.x AS x,
+  c.y AS y
+FROM
+  (
+    (
+      SELECT
+        e.features
+      FROM
+        layerelement AS le
+      INNER JOIN
+        element AS e
+      ON
+        le.hash = e.hash
+      WHERE
+        layer = %s AND
+        %s
+    ) AS e0
+  INNER JOIN
+    features AS ff
+  ON
+    e0.features = ff.hash
+  )
+INNER JOIN
+  coordinates AS c
+ON
+  ff.feature = c.hash
+",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+
+  attribute_value <- sprintf("
+    SELECT
+      le.id AS element,
+      av.attribute,
+      av.value
+    FROM
+      attributevalue AS av
+    INNER JOIN
+      layerelement AS le
+    ON
+      av.element = le.hash
+    WHERE
+      le.layer = %s AND
+      %s
+    ORDER BY
+      le.id, av.attribute
+    ",
+    dbQuoteString(connection, layer), #nolint
+    timerange("av", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  attribute <- sprintf("
+    SELECT
+      a.id AS id,
+      a.name AS name,
+      a.type AS type
+    FROM
+      attribute AS a
+    INNER JOIN
+      (
+        attributevalue AS av
+      INNER JOIN
+        layerelement AS le
+      ON
+        av.element = le.hash
+      )
+    ON
+      a.id = av.attribute
+    WHERE
+      le.layer = %s AND
+      %s
+    GROUP BY
+      a.id, name, type
+    ",
+    dbQuoteString(connection, layer), #nolint
+    timerange("av", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  crs <- sprintf("
+    SELECT
+      value
+    FROM
+      crs
+    WHERE
+      layer = %s AND
+      %s",
+    dbQuoteString(connection, layer), #nolint
+    timerange("crs", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
+    "[["("value") %>% #nolint
+    CRS()
+
+  new(
+    "geoVersion",
+    Coordinates = coordinates,
+    Feature = feature,
+    Features = features,
+    LayerElement = layerelement,
+    Attribute = attribute,
+    AttributeValue = attribute_value,
+    CRS = crs
+  )
+}

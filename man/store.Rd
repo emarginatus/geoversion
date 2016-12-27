@@ -4,10 +4,12 @@
 \alias{store}
 \title{store a geoVersion object}
 \usage{
-store(x, connection)
+store(x, name, connection)
 }
 \arguments{
 \item{x}{a geoVersion object}
+
+\item{name}{the name of the layer}
 
 \item{connection}{a DBIConnection}
 }

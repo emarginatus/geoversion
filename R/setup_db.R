@@ -41,18 +41,54 @@ setup_db <- function(connection){
       stringsAsFactors = FALSE
     ),
     element = data.frame(
-      id = integer(0),
+      hash = character(0),
       features = character(0),
       spawn = numeric(0),
       destroy = numeric(0),
       stringsAsFactors = FALSE
     ),
     staging_element = data.frame(
-      id = integer(0),
+      hash = character(0),
       features = character(0),
       spawn = numeric(0),
       destroy = numeric(0),
       stringsAsFactors = FALSE
+    ),
+    layerelement = data.frame(
+      layer = character(0),
+      id = integer(0),
+      hash = character(0)
+    ),
+    staging_layerelement = data.frame(
+      layer = character(0),
+      id = integer(0),
+      hash = character(0)
+    ),
+    layer = data.frame(
+      hash = character(0),
+      name = character(0),
+      type = character(0),
+      spawn = numeric(0),
+      destroy = numeric(0)
+    ),
+    staging_layer = data.frame(
+      hash = character(0),
+      name = character(0),
+      type = character(0),
+      spawn = numeric(0),
+      destroy = numeric(0)
+    ),
+    crs = data.frame(
+      layer = character(0),
+      value = character(0),
+      spawn = numeric(0),
+      destroy = numeric(0)
+    ),
+    staging_crs = data.frame(
+      layer = character(0),
+      value = character(0),
+      spawn = numeric(0),
+      destroy = numeric(0)
     ),
     attribute = data.frame(
       id = character(0),
@@ -67,7 +103,7 @@ setup_db <- function(connection){
       stringsAsFactors = FALSE
     ),
     attributevalue = data.frame(
-      element = integer(0),
+      element = character(0),
       attribute = character(0),
       value = character(0),
       spawn = numeric(0),
