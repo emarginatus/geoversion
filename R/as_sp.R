@@ -1,10 +1,13 @@
 #' Convert a geoVersion object to a Spatial*DataFrame
 #' @param x the geoVersion object
 #' @export
-#' @importFrom dplyr %>% select_ inner_join group_by_ arrange_ summarise_
+#' @importFrom dplyr %>% select_ inner_join group_by_ arrange_ summarise_ filter_
 #' @importFrom tidyr spread_
 #' @importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame
 as_sp <- function(x){
+  to_factor <- x@Attribute %>%
+    filter_(~type == "factor") %>%
+    "[["("name")
   attribute <- x@Attribute %>%
     select_(~id, ~name) %>%
     inner_join(
@@ -13,6 +16,7 @@ as_sp <- function(x){
     ) %>%
     select_(~-id) %>%
     spread_(key_col = "name", value_col = "value", convert = TRUE) %>%
+    mutate_at(to_factor, as.factor) %>%
     inner_join(x@LayerElement, by = c("element" = "id"))
   rownames(attribute) <- attribute$features
   polygons <- x@Feature %>%
