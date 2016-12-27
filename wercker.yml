@@ -1,4 +1,4 @@
-box: inbobmk/rstable
+box: inbobmk/rstable:3.3.2
 build:
   steps:
     - inbobmk/r-check
