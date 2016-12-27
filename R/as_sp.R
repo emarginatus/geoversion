@@ -32,6 +32,6 @@ as_sp <- function(x){
   SpatialPolygons(polygons$polygons, proj4string = x@CRS) %>% #nolint
     SpatialPolygonsDataFrame( #nolint
       data = attribute %>%
-        select_(~-features, ID = ~element)
+        select_(~-features, PermanentID = ~element)
     )
 }
