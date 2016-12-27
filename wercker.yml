@@ -1,4 +1,4 @@
-box: inbobmk/r-stable:3.3.2
+box: inbobmk/rstable
 build:
   steps:
     - inbobmk/r-check
