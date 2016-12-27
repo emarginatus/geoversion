@@ -1,4 +1,5 @@
 context("retrieve geoVersion from a database")
+require(dplyr)
 test_that("it tests if the layer exists", {
   expect_error(
     retrieve(name = "junk", connection = connection),
@@ -10,7 +11,7 @@ layername <- "test"
 test_that("it retrieves a geoVersion correctly", {
   expect_is(
     output <- retrieve(name = layername, connection = connection),
-    "SpatialPolygonsDataFrame"
+    "geoVersion"
   )
 
   sppolydf.bis@data$Text[1] <- "C"
@@ -18,12 +19,37 @@ test_that("it retrieves a geoVersion correctly", {
   sppolydf.bis@data$Logical <- NULL
   sppolydf.bis@data$Extra <- TRUE
   sppolydf.bis@data$Factor <- factor(sppolydf.bis@data$Factor)
-  expect_equal(
-    sppolydf.bis@data,
-    output@data[, colnames(sppolydf.bis@data)]
+  output_sp <- as_sp(output)
+
+  expect_true(all(colnames(output_sp@data) %in% colnames(sppolydf.bis@data)))
+  expect_true(all(colnames(sppolydf.bis@data) %in% colnames(output_sp@data)))
+  expect_identical(
+    output_sp@data %>%
+      anti_join(sppolydf.bis@data, by = "PermanentID") %>%
+      nrow(),
+    0L
   )
   expect_identical(
-    rgeos::gCovers(sppolydf.bis, output, byid = TRUE) %>%
+    nrow(output_sp@data),
+    nrow(sppolydf.bis@data)
+  )
+  joined <- output_sp@data %>%
+    select_(.dots = colnames(sppolydf.bis@data)) %>%
+    inner_join(sppolydf.bis@data, by = "PermanentID")
+  expect_identical(
+    nrow(joined),
+    nrow(output_sp@data)
+  )
+  expect_equal(
+    joined %>%
+      select_(ends_with(".x")) %>%
+      unname(),
+    joined %>%
+      select_(ends_with(".y")) %>%
+      unname()
+  )
+  expect_identical(
+    rgeos::gCovers(sppolydf.bis, output_sp, byid = TRUE) %>%
       unname(),
     sppolydf %>%
       length() %>%
@@ -31,7 +57,7 @@ test_that("it retrieves a geoVersion correctly", {
       `==`(1L)
   )
   expect_identical(
-    rgeos::gCovers(output, sppolydf.bis, byid = TRUE) %>%
+    rgeos::gCovers(output_sp, sppolydf.bis, byid = TRUE) %>%
       unname(),
     sppolydf %>%
       length() %>%
@@ -43,28 +69,43 @@ test_that("it retrieves a geoVersion correctly", {
 test_that("retrieve handles holes in polygons", {
   expect_is(
     output <- retrieve(name = paste0(layername, 2), connection = connection),
-    "SpatialPolygonsDataFrame"
+    "geoVersion"
   )
 
   sppolydf@data$Factor <- factor(sppolydf@data$Factor)
+  output_sp <- as_sp(output)
+
+  expect_true(all(colnames(output_sp@data) %in% colnames(sppolydf@data)))
+  expect_true(all(colnames(sppolydf@data) %in% colnames(output_sp@data)))
+  expect_identical(
+    output_sp@data %>%
+      anti_join(sppolydf@data, by = "PermanentID") %>%
+      nrow(),
+    0L
+  )
+  expect_identical(
+    nrow(output_sp@data),
+    nrow(sppolydf.bis@data)
+  )
+  joined <- output_sp@data %>%
+    select_(.dots = colnames(sppolydf@data)) %>%
+    inner_join(sppolydf@data, by = "PermanentID")
+  expect_identical(
+    nrow(joined),
+    nrow(output_sp@data)
+  )
   expect_equal(
-    sppolydf@data,
-    output@data[, colnames(sppolydf@data)]
+    joined %>%
+      select_(ends_with(".x")) %>%
+      unname(),
+    joined %>%
+    select_(ends_with(".y")) %>%
+      unname()
   )
   expect_identical(
-    rgeos::gCovers(sppolydf, output, byid = TRUE) %>%
+    rgeos::gCovers(sppolydf, output_sp, byid = TRUE) %>%
       unname(),
-    sppolydf %>%
-      length() %>%
-      diag() %>%
-      `==`(1L)
-  )
-  expect_identical(
-    rgeos::gCovers(output, sppolydf, byid = TRUE) %>%
-      unname(),
-    sppolydf %>%
-      length() %>%
-      diag() %>%
-      `==`(1L)
+    rgeos::gCovers(output_sp, sppolydf, byid = TRUE) %>%
+      unname()
   )
 })

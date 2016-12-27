@@ -4,12 +4,14 @@
 \alias{retrieve}
 \title{Retrieve a spatial object from the database}
 \usage{
-retrieve(name, connection)
+retrieve(name, connection, timestamp = NA_real_)
 }
 \arguments{
 \item{name}{the name of the layer}
 
 \item{connection}{a DBIConnection}
+
+\item{timestamp}{The point in time at which the object should be return. Default to NA which implies the latest status.}
 }
 \description{
 Retrieve a spatial object from the database
