@@ -16,14 +16,14 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     if (is.na(timestamp)) {
       timerange <- sprintf(
         "%s.destroy IS NULL",
-        dbQuoteIdentifier(conn = connection, name)
+        dbQuoteIdentifier(conn = connection, name) #nolint
       )
     } else {
       timerange <- sprintf(
         "%s.spawn >= %.21f AND\n%.21f < %s.destroy",
-        dbQuoteIdentifier(conn = connection, name),
+        dbQuoteIdentifier(conn = connection, name), #nolint
         timestamp,
-        dbQuoteIdentifier(conn = connection, name),
+        dbQuoteIdentifier(conn = connection, name), #nolint
         timestamp
       )
     }
@@ -31,11 +31,11 @@ retrieve <- function(name, connection, timestamp = NA_real_){
 
   layer <- sprintf(
     "SELECT hash FROM layer WHERE name = %s AND %s",
-    dbQuoteIdentifier(connection, name),
+    dbQuoteIdentifier(connection, name), #nolint
     timerange("layer", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) %>%
-    "[["("hash")
+    dbGetQuery(conn = connection) %>% #nolint
+    "[["("hash") #nolint
   if (length(layer) == 0) {
     stop("There is no layer named '", name, "'")
   }
@@ -53,10 +53,10 @@ ON
 WHERE
   layer = %s AND
   %s",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
   features <- sprintf("
 SELECT
   ff.hash AS hash,
@@ -80,10 +80,10 @@ INNER JOIN
 ON
   e0.features = ff.hash
 ",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
   feature <- sprintf("
 SELECT
   f.hash AS hash,
@@ -113,10 +113,10 @@ INNER JOIN
 ON
   ff.feature = f.hash
 ",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
 
   coordinates <- sprintf("
 SELECT
@@ -149,10 +149,10 @@ INNER JOIN
 ON
   ff.feature = c.hash
 ",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
 
   attribute_value <- sprintf("
     SELECT
@@ -171,10 +171,10 @@ ON
     ORDER BY
       le.id, av.attribute
     ",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("av", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
   attribute <- sprintf("
     SELECT
       a.id AS id,
@@ -198,10 +198,10 @@ ON
     GROUP BY
       a.id, name, type
     ",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("av", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection)
+    dbGetQuery(conn = connection) #nolint
   crs <- sprintf("
     SELECT
       value
@@ -210,11 +210,11 @@ ON
     WHERE
       layer = %s AND
       %s",
-    dbQuoteString(connection, layer),
+    dbQuoteString(connection, layer), #nolint
     timerange("crs", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) %>%
-    "[["("value") %>%
+    dbGetQuery(conn = connection) %>% #nolint
+    "[["("value") %>% #nolint
     CRS()
 
   new(

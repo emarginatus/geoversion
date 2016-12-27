@@ -4,7 +4,7 @@ test_that(
     gv <- convert(sppolydf, "PermanentID")
     expect_is(gv_sp <- as_sp(gv), "SpatialPolygonsDataFrame")
     current <- gv_sp@data %>%
-      select_(~-PermanentID) %>%
+      select_(~-PermanentID) %>% #nolint
       sapply(class)
     old <- gv@Attribute[["type"]]
     names(old) <- gv@Attribute[["name"]]

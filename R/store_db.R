@@ -35,8 +35,8 @@ WHERE
   name = %s AND
   type = %s AND
   destroy IS NULL",
-    dbQuoteString(connection, name),
-    dbQuoteString(connection, type)
+    dbQuoteString(connection, name), #nolint
+    dbQuoteString(connection, type) #nolint
   ) %>%
     dbGetQuery(conn = connection) #nolint
   if (nrow(layerhash) == 0) {
@@ -64,9 +64,9 @@ FROM
 WHERE
   layer = %s AND
   destroy IS NULL",
-    dbQuoteString(connection, layerhash)
+    dbQuoteString(connection, layerhash) #nolint
   ) %>%
-    dbGetQuery(conn = connection) %>%
+    dbGetQuery(conn = connection) %>% #nolint
     full_join(
       data.frame(
         value = x@CRS@projargs,
@@ -86,10 +86,10 @@ WHERE
   destroy IS NULL
 ",
       timestamp,
-      dbQuoteString(conn = connection, layerhash),
+      dbQuoteString(conn = connection, layerhash), #nolint
       max(compare.crs$spawn, na.rm = TRUE)
     ) %>%
-      dbGetQuery(conn = connection)
+      dbGetQuery(conn = connection) #nolint
     compare.crs <- compare.crs %>%
       filter_(~is.na(spawn))
   }
@@ -106,7 +106,7 @@ WHERE
 
   sprintf(
     "SELECT id, hash FROM layerelement WHERE layer = %s",
-    dbQuoteString(connection, layerhash)
+    dbQuoteString(connection, layerhash) #nolint
   ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     anti_join(x = x@LayerElement, by = "id") %>%
@@ -146,7 +146,7 @@ ON
 WHERE
   element.destroy IS NULL AND
   layer.name = %s",
-      dbQuoteString(connection, name)
+      dbQuoteString(connection, name) #nolint
     ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     full_join(x@LayerElement, by = "id") %>%
@@ -175,8 +175,8 @@ SET
 WHERE
   hash = %s AND features = %s AND destroy IS NULL",
         timestamp,
-        dbQuoteString(connection, hash),
-        dbQuoteString(connection, features.x)
+        dbQuoteString(connection, hash), #nolint
+        dbQuoteString(connection, features.x) #nolint
       )
     )
   sapply(
@@ -321,7 +321,7 @@ ON
 WHERE
   attributevalue.destroy IS NULL AND
   layer.name = %s",
-    dbQuoteString(connection, name)
+    dbQuoteString(connection, name) #nolint
   ) %>%
     dbGetQuery(conn = connection) %>% #nolint
     full_join(
@@ -343,8 +343,8 @@ SET
 WHERE
   element = %s AND attribute = %s AND destroy IS NULL",
         timestamp,
-        dbQuoteString(connection, element),
-        dbQuoteString(connection, attribute)
+        dbQuoteString(connection, element), #nolint
+        dbQuoteString(connection, attribute) #nolint
       )
     )
   sapply(

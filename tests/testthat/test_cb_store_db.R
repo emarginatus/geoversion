@@ -797,9 +797,9 @@ WHERE
   name = %s AND
   crs.destroy IS NULL
 ",
-    dbQuoteString(conn = connection, paste0(layername, "crs"))
+    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
-    dbGetQuery(con = connection)
+    dbGetQuery(con = connection) #nolint
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -823,9 +823,9 @@ WHERE
   name = %s AND
   crs.destroy IS NULL
 ",
-    dbQuoteString(conn = connection, paste0(layername, "crs"))
+    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
-    dbGetQuery(con = connection)
+    dbGetQuery(con = connection) #nolint
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -847,9 +847,9 @@ WHERE
   name = %s AND
   crs.destroy IS NOT NULL
 ",
-    dbQuoteString(conn = connection, paste0(layername, "crs"))
+    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
-    dbGetQuery(con = connection)
+    dbGetQuery(con = connection) #nolint
   expect_identical(nrow(stored), 0L)
 
   sppolydf@proj4string <- CRS("+proj=longlat +datum=WGS84")
@@ -871,9 +871,9 @@ WHERE
   name = %s AND
   crs.destroy IS NULL
 ",
-    dbQuoteString(conn = connection, paste0(layername, "crs"))
+    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
-    dbGetQuery(con = connection)
+    dbGetQuery(con = connection) #nolint
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -895,8 +895,8 @@ WHERE
   name = %s AND
   crs.destroy IS NOT NULL
 ",
-    dbQuoteString(conn = connection, paste0(layername, "crs"))
+    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
-    dbGetQuery(con = connection)
+    dbGetQuery(con = connection) #nolint
   expect_identical(nrow(stored), 1L)
 })

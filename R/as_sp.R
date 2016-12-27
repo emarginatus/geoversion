@@ -7,7 +7,7 @@
 as_sp <- function(x){
   to_factor <- x@Attribute %>%
     filter_(~type == "factor") %>%
-    "[["("name")
+    "[["("name") #nolint
   attribute <- x@Attribute %>%
     select_(~id, ~name) %>%
     inner_join(
