@@ -71,14 +71,104 @@ setClass(
 )
 
 #' @importFrom methods setValidity
+#' @importFrom assertthat assert_that has_name noNA
 setValidity(
   "geoVersion",
   function(object){
+    assert_that(has_name(object@Coordinates, "hash"))
+    assert_that(has_name(object@Coordinates, "succession"))
+    assert_that(has_name(object@Coordinates, "x"))
+    assert_that(has_name(object@Coordinates, "y"))
+
+    assert_that(has_name(object@Feature, "hash"))
+    assert_that(has_name(object@Feature, "type"))
+
+    assert_that(has_name(object@Features, "hash"))
+    assert_that(has_name(object@Features, "feature"))
+
+    assert_that(has_name(object@LayerElement, "id"))
+    assert_that(has_name(object@LayerElement, "features"))
+    assert_that(has_name(object@LayerElement, "crs"))
+
+    assert_that(has_name(object@Attribute, "id"))
+    assert_that(has_name(object@Attribute, "name"))
+    assert_that(has_name(object@Attribute, "type"))
+
+    assert_that(has_name(object@AttributeValue, "element"))
+    assert_that(has_name(object@AttributeValue, "attribute"))
+    assert_that(has_name(object@AttributeValue, "value"))
+
+    assert_that(has_name(object@Transformation, "from"))
+    assert_that(has_name(object@Transformation, "to"))
+
+    assert_that(has_name(object@Reference, "from"))
+    assert_that(has_name(object@Reference, "source_x"))
+    assert_that(has_name(object@Reference, "source_y"))
+    assert_that(has_name(object@Reference, "target_x"))
+    assert_that(has_name(object@Reference, "target_y"))
+
+    assert_that(noNA(object@Coordinates)) #nolint
+    assert_that(noNA(object@Feature)) #nolint
+    assert_that(noNA(object@Features)) #nolint
+    assert_that(noNA(object@LayerElement[, c("id", "features")])) #nolint
+    assert_that(noNA(object@Attribute)) #nolint
+    assert_that(noNA(object@AttributeValue)) #nolint
+    assert_that(noNA(object@Transformation$from)) #nolint
+    assert_that(noNA(object@Reference)) #nolint
+
+    if (anyDuplicated(object@Coordinates[, c("hash", "succession")])) {
+      stop("Duplicated hash - succession combinations in the Coordinates slot")
+    }
     if (anyDuplicated(object@Feature$hash)) {
       stop("Duplicated hashes in the Feature slot")
     }
+    if (anyDuplicated(object@LayerElement$id)) {
+      stop("Duplicated id in the LayerElement slot")
+    }
+    if (anyDuplicated(object@LayerElement$features)) {
+      stop("Duplicated features in the LayerElement slot")
+    }
+    if (anyDuplicated(object@Attribute$id)) {
+      stop("Duplicated id in the Atribute slot")
+    }
+    if (anyDuplicated(object@AttributeValue[, c("element", "attribute")])) {
+      stop("Duplicated id in the AtributeValue slot")
+    }
+    if (anyDuplicated(object@Transformation$from)) {
+      stop("Duplicated from in the Transformation slot")
+    }
+
     if (any(!object@Feature$type %in% c("S", "H"))) {
       stop("Feature type can be only 'S' or 'H'")
+    }
+
+    assert_that(all(object@Coordinates$hash %in% object@Feature$hash))
+    assert_that(all(object@Feature$hash %in% object@Coordinates$hash))
+    assert_that(all(object@Features$feature %in% object@Feature$hash))
+    assert_that(all(object@LayerElement$features %in% object@Features$hash))
+    assert_that(all(object@Attribute$id %in% object@AttributeValue$attribute))
+    assert_that(all(object@AttributeValue$attribute %in% object@Attribute$id))
+    assert_that(all(object@LayerElement$id %in% object@AttributeValue$element))
+    assert_that(all(object@AttributeValue$element %in% object@LayerElement$id))
+    assert_that(all(object@Transformation$from %in% object@Reference$from))
+    assert_that(all(object@Reference$from %in% object@Transformation$from))
+
+    test_crs <- unique(object@LayerElement$crs)
+    no_transformation <- valid_crs(test_crs)
+    if (!all(test_crs[!no_transformation] %in% object@Transformation$from)) {
+      stop(
+"All non standards CRS in the LayerElement slot must have a match in from field
+of the Transformation slot"
+      )
+    }
+    if (!all(object@Transformation$from %in% test_crs[!no_transformation])) {
+      stop(
+"Unrequired crs in the from field of the Transformation slot"
+      )
+    }
+    test_crs <- unique(object@Transformation$to)
+    if (!all(valid_crs(test_crs))) {
+      stop("All crs in the to field from the Transformation slot must be valid")
     }
   }
 )
