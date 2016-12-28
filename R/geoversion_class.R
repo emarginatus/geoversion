@@ -15,6 +15,8 @@ setClass(
     LayerElement = "data.frame",
     Attribute = "data.frame",
     AttributeValue = "data.frame",
+    Transformation = "data.frame",
+    Reference = "data.frame",
     CRS = "CRS"
   ),
   prototype = prototype(
@@ -33,6 +35,7 @@ setClass(
     Features = data.frame(
       hash = character(0),
       feature = character(0),
+      transformation = character(0),
       stringsAsFactors = FALSE
     ),
     LayerElement = data.frame(
@@ -50,6 +53,20 @@ setClass(
       element = character(0),
       attribute = character(0),
       value = character(0),
+      stringsAsFactors = FALSE
+    ),
+    Transformation = data.frame(
+      hash = character(0),
+      from = character(0),
+      to = character(0),
+      stringsAsFactors = FALSE
+    ),
+    Reference = data.frame(
+      hash = character(0),
+      source_x = numeric(0),
+      source_y = numeric(0),
+      target_x = numeric(0),
+      target_y = numeric(0),
       stringsAsFactors = FALSE
     )
   )
