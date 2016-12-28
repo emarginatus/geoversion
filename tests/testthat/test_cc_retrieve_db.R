@@ -1,5 +1,4 @@
 context("retrieve geoVersion from a database")
-require(dplyr)
 test_that("it tests if the layer exists", {
   expect_error(
     retrieve(name = "junk", connection = connection),
@@ -42,10 +41,10 @@ test_that("it retrieves a geoVersion correctly", {
   )
   expect_equal(
     joined %>%
-      select_(ends_with(".x")) %>%
+      select_(dplyr:::ends_with(".x")) %>%
       unname(),
     joined %>%
-      select_(ends_with(".y")) %>%
+      select_(dplyr:::ends_with(".y")) %>%
       unname()
   )
   expect_identical(
@@ -96,10 +95,10 @@ test_that("retrieve handles holes in polygons", {
   )
   expect_equal(
     joined %>%
-      select_(ends_with(".x")) %>%
+      select_(dplyr:::ends_with(".x")) %>%
       unname(),
     joined %>%
-    select_(ends_with(".y")) %>%
+    select_(dplyr:::ends_with(".y")) %>%
       unname()
   )
   expect_identical(
