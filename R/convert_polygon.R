@@ -1,6 +1,7 @@
 #' Convert a spatial object
 #' @param object the object to convert
 #' @param stable.id the name of the variable that holds the stable ID
+#' @param ... other parameters
 #' @name convert
 #' @rdname convert
 #' @exportMethod convert
@@ -8,7 +9,7 @@
 #' @importFrom methods setGeneric
 setGeneric(
   name = "convert",
-  def = function(object, stable.id){
+  def = function(object, stable.id, ...){
     standard.generic("convert") #nocov
   }
 )
@@ -21,7 +22,7 @@ setGeneric(
 setMethod(
   f = "convert",
   signature = "Polygon",
-  definition = function(object, stable.id){
+  definition = function(object, stable.id, ...){
     hash <- sha1(list(hole = object@hole, coords = object@coords))
     coordinates <- data.frame(
       hash,
@@ -50,7 +51,7 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "Polygons",
-  definition = function(object, stable.id){
+  definition = function(object, stable.id, ...){
     poly <- convert(object@Polygons)
     poly@Features <- data.frame(
       hash = object@ID,
@@ -70,9 +71,13 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "SpatialPolygonsDataFrame",
-  definition = function(object, stable.id){
+  definition = function(object, stable.id, ...){
+    dots <- list(...)
+    if (is.null(dots$crs.id)) {
+      crs <- object@proj4string@projargs %>%
+        rep(length(object))
+    }
     poly <- convert(object@polygons)
-    poly@CRS <- object@proj4string
     hash <- poly@Features %>%
       group_by_(~hash) %>%
       summarise_(
@@ -81,12 +86,14 @@ setMethod(
     if (isTRUE(all.equal(rownames(object@data), hash$hash))) {
       hash <- hash %>%
         mutate_(
-          id = ~object@data[hash, stable.id]
+          id = ~object@data[hash, stable.id],
+          crs = ~crs
         )
     } else {
       hash <- hash %>%
         mutate_(
-          id = ~object@data[, stable.id]
+          id = ~object@data[, stable.id],
+          crs = ~crs
         )
     }
     poly@Features <- poly@Features %>%
@@ -99,7 +106,7 @@ setMethod(
         ~feature
       )
     poly@LayerElement <- hash %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       as.data.frame()
     poly@Attribute <- data.frame(
       name = colnames(object@data),
@@ -132,7 +139,7 @@ setMethod(
 setMethod(
   f = "convert",
   signature = "list",
-  definition = function(object, stable.id){
+  definition = function(object, stable.id, ...){
     do.call(
       combined,
       lapply(object, convert)

@@ -74,16 +74,6 @@ setMethod(
       bind_rows() %>%
       distinct_() %>%
       as.data.frame()
-    crs <- lapply(
-      list(...),
-      function(x){
-        x@CRS
-      }
-    ) %>%
-      unique()
-    if (length(crs) > 1) {
-      stop("CRS not unique", call. = FALSE)
-    }
     new(
       "geoVersion",
       Coordinates = coordinates,
@@ -91,8 +81,7 @@ setMethod(
       Features = features,
       LayerElement = layer.element,
       Attribute = attribute,
-      AttributeValue = attribute.value,
-      CRS = crs[[1]]
+      AttributeValue = attribute.value
     )
   }
 )

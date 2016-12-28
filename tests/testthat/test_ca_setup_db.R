@@ -74,7 +74,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "crs"),
-      c("layer", "value", "spawn", "destroy")
+      c("element", "value", "spawn", "destroy")
     )
     expect_identical(
       DBI::dbListFields(connection, "layer"),

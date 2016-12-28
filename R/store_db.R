@@ -27,14 +27,14 @@ store <- function(x, name, connection){
       stop(call. = FALSE)
   }
   layerhash <- sprintf("
-SELECT
-  hash
-FROM
-  layer
-WHERE
-  name = %s AND
-  type = %s AND
-  destroy IS NULL",
+    SELECT
+      hash
+    FROM
+      layer
+    WHERE
+      name = %s AND
+      type = %s AND
+      destroy IS NULL",
     dbQuoteString(connection, name), #nolint
     dbQuoteString(connection, type) #nolint
   ) %>%
@@ -52,56 +52,6 @@ WHERE
       dbWriteTable(conn = connection, name = "layer", append = TRUE) #nolint
   } else {
     layerhash <- layerhash$hash
-  }
-
-  # compare exisiting CRS
-  compare.crs <- sprintf("
-SELECT
-  value,
-  spawn
-FROM
-  crs
-WHERE
-  layer = %s AND
-  destroy IS NULL",
-    dbQuoteString(connection, layerhash) #nolint
-  ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
-    full_join(
-      data.frame(
-        value = x@CRS@projargs,
-        stringsAsFactors = FALSE
-      ),
-      by = "value"
-    )
-  if (nrow(compare.crs) > 1) {
-    sprintf("
-UPDATE
-  crs
-SET
-  destroy = %.21f
-WHERE
-  layer = %s AND
-  spawn = %.21f AND
-  destroy IS NULL
-",
-      timestamp,
-      dbQuoteString(conn = connection, layerhash), #nolint
-      max(compare.crs$spawn, na.rm = TRUE)
-    ) %>%
-      dbGetQuery(conn = connection) #nolint
-    compare.crs <- compare.crs %>%
-      filter_(~is.na(spawn))
-  }
-  if (is.na(compare.crs$spawn)) {
-    data.frame(
-      layer = layerhash,
-      value = x@CRS@projargs,
-      spawn = timestamp,
-      destroy = NA_real_,
-      stringsAsFactors = FALSE
-    ) %>%
-    dbWriteTable(conn = connection, name = "crs", append = TRUE) #nolint
   }
 
   sprintf(
@@ -124,28 +74,28 @@ WHERE
     )
 
   element <- sprintf("
-SELECT
-  layer,
-  id,
-  element.hash,
-  features,
-  element.spawn,
-  element.destroy
-FROM
-  (
-    layer
-  INNER JOIN
-    layerelement
-  ON
-    layer.hash = layerelement.layer
-  )
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-WHERE
-  element.destroy IS NULL AND
-  layer.name = %s",
+    SELECT
+      layer,
+      id,
+      element.hash,
+      features,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      element
+    ON
+      layerelement.hash = element.hash
+    WHERE
+      element.destroy IS NULL AND
+      layer.name = %s",
       dbQuoteString(connection, name) #nolint
     ) %>%
     dbGetQuery(conn = connection) %>% #nolint
@@ -168,12 +118,12 @@ WHERE
     filter_(~is.na(features.y) | features.x != features.y) %>%
     mutate_(
       sql = ~sprintf("
-UPDATE
-  element
-SET
-  destroy = %.21f
-WHERE
-  hash = %s AND features = %s AND destroy IS NULL",
+        UPDATE
+          element
+        SET
+          destroy = %.21f
+        WHERE
+          hash = %s AND features = %s AND destroy IS NULL",
         timestamp,
         dbQuoteString(connection, hash), #nolint
         dbQuoteString(connection, features.x) #nolint
@@ -201,23 +151,24 @@ WHERE
   )
   dbGetQuery( #nolint
     connection, "
-INSERT INTO
-  features
-    SELECT
-      staging_features.hash, staging_features.feature
-    FROM
-      staging_features
-    LEFT JOIN
-      (
+    INSERT INTO
+      features
         SELECT
-          hash, feature, 1 AS current
+          staging_features.hash, staging_features.feature
         FROM
-          features
-      ) AS current
-    ON
-      staging_features.hash = current.hash AND
-      staging_features.feature = current.feature
-    WHERE current IS NULL")
+          staging_features
+        LEFT JOIN
+          (
+            SELECT
+              hash, feature, 1 AS current
+            FROM
+              features
+          ) AS current
+        ON
+          staging_features.hash = current.hash AND
+          staging_features.feature = current.feature
+        WHERE current IS NULL"
+  )
 
   new.feature <- x@Feature %>%
     semi_join(new.features, by = c("hash" = "feature"))
@@ -229,22 +180,23 @@ INSERT INTO
   )
   dbGetQuery( #nolint
     connection, "
-INSERT INTO
-  feature
-    SELECT
-      staging_feature.hash, staging_feature.type
-    FROM
-      staging_feature
-    LEFT JOIN
-      (
-        SELECT
-          hash, 1 AS current
-        FROM
-          feature
-      ) AS current
-    ON
-      staging_feature.hash = current.hash
-    WHERE current IS NULL")
+      INSERT INTO
+        feature
+      SELECT
+        staging_feature.hash, staging_feature.type
+      FROM
+        staging_feature
+      LEFT JOIN
+        (
+          SELECT
+            hash, 1 AS current
+          FROM
+            feature
+        ) AS current
+      ON
+        staging_feature.hash = current.hash
+      WHERE current IS NULL"
+  )
 
   x@Coordinates %>%
     semi_join(new.feature, by = "hash") %>%
@@ -255,8 +207,8 @@ INSERT INTO
     )
   dbGetQuery( #nolint
     connection, "
-INSERT INTO
-  coordinates
+    INSERT INTO
+      coordinates
     SELECT
       staging_coordinates.hash, succession, x, y
     FROM
@@ -270,7 +222,8 @@ INSERT INTO
       ) AS current
     ON
       staging_coordinates.hash = current.hash
-    WHERE current IS NULL")
+    WHERE current IS NULL"
+  )
 
   x@Attribute %>%
     select_(~id, ~name, ~type) %>%
@@ -281,8 +234,8 @@ INSERT INTO
     )
   dbGetQuery( #nolint
     connection, "
-INSERT INTO
-  attribute
+    INSERT INTO
+      attribute
     SELECT
       staging_attribute.id, name, type
     FROM
@@ -298,29 +251,28 @@ INSERT INTO
       staging_attribute.id = current.id
     WHERE current IS NULL")
 
-
   attributevalue <- sprintf("
-SELECT
-  element,
-  attribute,
-  value,
-  attributevalue.spawn AS spawn,
-  attributevalue.destroy AS destroy
-FROM
-  attributevalue
-INNER JOIN
-  (
-    layer
-  INNER JOIN
-    layerelement
-  ON
-    layer.hash = layerelement.layer
-  )
-ON
-  attributevalue.element = layerelement.hash
-WHERE
-  attributevalue.destroy IS NULL AND
-  layer.name = %s",
+    SELECT
+      element,
+      attribute,
+      value,
+      attributevalue.spawn AS spawn,
+      attributevalue.destroy AS destroy
+    FROM
+      attributevalue
+    INNER JOIN
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    ON
+      attributevalue.element = layerelement.hash
+    WHERE
+      attributevalue.destroy IS NULL AND
+      layer.name = %s",
     dbQuoteString(connection, name) #nolint
   ) %>%
     dbGetQuery(conn = connection) %>% #nolint
@@ -336,12 +288,12 @@ WHERE
     filter_(~is.na(value.y) | value.x != value.y) %>%
     mutate_(
       sql = ~sprintf("
-UPDATE
-  attributevalue
-SET
-  destroy = %.21f
-WHERE
-  element = %s AND attribute = %s AND destroy IS NULL",
+        UPDATE
+          attributevalue
+        SET
+          destroy = %.21f
+        WHERE
+          element = %s AND attribute = %s AND destroy IS NULL",
         timestamp,
         dbQuoteString(connection, element), #nolint
         dbQuoteString(connection, attribute) #nolint
@@ -362,5 +314,60 @@ WHERE
       name = "attributevalue",
       append = TRUE
     )
+
+  crs <- sprintf("
+    SELECT
+      element,
+      id,
+      value AS crs,
+      spawn
+    FROM
+      crs
+    INNER JOIN
+      layerelement AS le
+    ON
+      crs.element = le.hash
+    WHERE
+      le.layer = %s AND
+      crs.destroy IS NULL",
+    dbQuoteString(connection, layerhash) #nolint
+  ) %>%
+    dbGetQuery(conn = connection) %>% #nolint
+    full_join(
+      element %>%
+        select_(~id, ~hash) %>%
+        inner_join(x@LayerElement, by = "id"),
+      by = "id"
+    )
+  old <- crs %>%
+    filter_(~crs.x != crs.y | (is.na(crs.y) != is.na(crs.x))) %>%
+    mutate_(
+      sql = ~sprintf("
+        UPDATE
+          crs
+        SET
+          destroy = %.21f
+        WHERE
+          element = %s AND destroy IS NULL",
+        timestamp,
+        dbQuoteString(connection, element) #nolint
+      )
+    )
+  sapply(
+    old$sql,
+    function(statement){
+      dbGetQuery(connection, statement) #nolint
+    }
+  )
+  new.crs <- crs %>%
+    filter_(~
+        crs.x != crs.y |
+        (is.na(crs.x) & is.na(spawn)) |
+        (is.na(crs.x) != is.na(crs.y))
+    ) %>%
+    mutate_(spawn = timestamp, destroy = NA_real_) %>%
+    select_(element = ~hash, value = ~crs.y, ~spawn, ~destroy)
+  dbWriteTable(connection, "crs", new.crs, append = TRUE) #nolint
+
   return(invisible(NULL))
 }

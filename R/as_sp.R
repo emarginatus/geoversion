@@ -17,7 +17,11 @@ as_sp <- function(x){
     select_(~-id) %>%
     spread_(key_col = "name", value_col = "value", convert = TRUE) %>%
     mutate_at(to_factor, as.factor) %>%
-    inner_join(x@LayerElement, by = c("element" = "id"))
+    inner_join(
+      x@LayerElement %>%
+        select_(~-crs),
+      by = c("element" = "id")
+    )
   rownames(attribute) <- attribute$features
   polygons <- x@Feature %>%
     inner_join(x@Coordinates, by = "hash") %>%
@@ -33,7 +37,12 @@ as_sp <- function(x){
     summarise_(
       polygons = ~list(Polygons(polygon, ID = unique(hash.y)))
     )
-  SpatialPolygons(polygons$polygons, proj4string = x@CRS) %>% #nolint
+  crs <- x@LayerElement %>%
+    distinct_(~crs) %>%
+    unlist() %>%
+    unname() %>%
+    CRS()
+  SpatialPolygons(polygons$polygons, proj4string = crs) %>% #nolint
     SpatialPolygonsDataFrame( #nolint
       data = attribute %>%
         select_(~-features, PermanentID = ~element)

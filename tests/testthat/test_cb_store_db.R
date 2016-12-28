@@ -5,21 +5,28 @@ test_that("it stores a geoVersion correctly in an empty database", {
   store(x = gv, name = layername, connection = connection)
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement
   )
@@ -49,18 +56,18 @@ ON
 
   attributevalue <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id AS element,
-  attribute,
-  value,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element"
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      spawn,
+      destroy
+    FROM
+      layerelement
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element"
   )
   expect_identical(
     attributevalue %>%
@@ -85,21 +92,28 @@ test_that(
   store(x = gv, name = layername, connection = connection)
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement
   )
@@ -167,22 +181,30 @@ test_that("it handles the removal of elements", {
 
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features),
+      select_(~id, ~features, ~crs) %>%
+      arrange_(~id),
     gv@LayerElement
   )
   element <- element %>%
@@ -223,18 +245,18 @@ ON
 
   attributevalue <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id AS element,
-  attribute,
-  value,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element"
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      spawn,
+      destroy
+    FROM
+      layerelement
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element"
   )
   expect_identical(
     attributevalue %>%
@@ -272,18 +294,25 @@ test_that("store() re-uses features", {
 
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -298,7 +327,7 @@ ON
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement %>%
       arrange_(~id)
@@ -340,18 +369,18 @@ ON
 
   attributevalue <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id AS element,
-  attribute,
-  value,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element"
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      spawn,
+      destroy
+    FROM
+      layerelement
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element"
   )
   expect_identical(
     attributevalue %>%
@@ -389,18 +418,25 @@ test_that("handle elements with changes in features", {
 
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -415,7 +451,7 @@ ON
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement %>%
       arrange_(~id)
@@ -472,18 +508,18 @@ ON
 
   attributevalue <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id AS element,
-  attribute,
-  value,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element"
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      spawn,
+      destroy
+    FROM
+      layerelement
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element"
   )
   expect_identical(
     attributevalue %>%
@@ -515,18 +551,25 @@ test_that("handle elements with change in attributevalues", {
 
   element <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id,
-  features,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-  ")
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        layerelement
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element"
+  )
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -541,7 +584,7 @@ ON
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement %>%
       arrange_(~id)
@@ -597,18 +640,18 @@ ON
 
   attributevalue <- dbGetQuery( #nolint
     connection, "
-SELECT
-  id AS element,
-  attribute,
-  value,
-  spawn,
-  destroy
-FROM
-  layerelement
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element"
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      spawn,
+      destroy
+    FROM
+      layerelement
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element"
   )
   expect_identical(
     attributevalue %>%
@@ -634,30 +677,36 @@ test_that("it re-uses features across layers", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = paste0(layername, 2), connection = connection)
 
-  element <- dbGetQuery( #nolint
-    connection, sprintf("
-SELECT
-  id,
-  features,
-  element.spawn,
-  element.destroy
-FROM
-  (
-    layer
-  INNER JOIN
-    layerelement
-  ON
-    layer.hash = layerelement.layer
-  )
-INNER JOIN
-  element
-ON
-  layerelement.hash = element.hash
-WHERE
-  layer.name = '%s'",
-    paste0(layername, 2)
-    )
-  )
+  element <- sprintf("
+    SELECT
+      id,
+      features,
+      value AS crs,
+      element.spawn,
+      element.destroy
+    FROM
+      (
+        (
+          layerelement
+        INNER JOIN
+          layer
+        ON
+          layerelement.layer = layer.hash
+        )
+      INNER JOIN
+        element
+      ON
+        layerelement.hash = element.hash
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      layer.name = %s",
+    dbQuoteString(connection, paste0(layername, 2)) #nolint
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -672,7 +721,7 @@ WHERE
   expect_identical(
     element %>%
       filter_(~is.na(destroy)) %>%
-      select_(~id, ~features) %>%
+      select_(~id, ~features, ~crs) %>%
       arrange_(~id),
     gv@LayerElement %>%
       arrange_(~id)
@@ -728,25 +777,25 @@ WHERE
 
   attributevalue <- dbGetQuery( #nolint
     connection, sprintf("
-SELECT
-  id AS element,
-  attribute,
-  value,
-  attributevalue.spawn,
-  attributevalue.destroy
-FROM
-  (
-    layer
-  INNER JOIN
-    layerelement
-  ON
-    layer.hash = layerelement.layer
-  )
-INNER JOIN
-  attributevalue
-ON
-  layerelement.hash = attributevalue.element AND
-  layer.name = '%s'",
+    SELECT
+      id AS element,
+      attribute,
+      value,
+      attributevalue.spawn,
+      attributevalue.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      attributevalue
+    ON
+      layerelement.hash = attributevalue.element AND
+      layer.name = '%s'",
     paste0(layername, 2)
     )
   )
@@ -782,21 +831,29 @@ test_that("it sets and updates the correct CRS", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   store(x = gv, name = paste0(layername, "crs"), connection = connection)
   stored <- sprintf("
-SELECT
-  layer.spawn AS layerspawn,
-  crs.value,
-  crs.spawn,
-  crs.destroy
-FROM
-  layer
-INNER JOIN
-  crs
-ON
-  layer.hash = crs.layer
-WHERE
-  name = %s AND
-  crs.destroy IS NULL
-",
+    SELECT
+      layer.spawn AS layerspawn,
+      crs.value,
+      crs.spawn,
+      crs.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      name = %s AND
+      crs.destroy IS NULL
+    GROUP BY
+      layer.spawn, crs.value, crs.spawn, crs.destroy
+    ",
     dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
     dbGetQuery(con = connection) #nolint
@@ -808,21 +865,29 @@ WHERE
 
   store(x = gv, name = paste0(layername, "crs"), connection = connection)
   stored <- sprintf("
-SELECT
-  layer.spawn AS layerspawn,
-  crs.value,
-  crs.spawn,
-  crs.destroy
-FROM
-  layer
-INNER JOIN
-  crs
-ON
-  layer.hash = crs.layer
-WHERE
-  name = %s AND
-  crs.destroy IS NULL
-",
+    SELECT
+      layer.spawn AS layerspawn,
+      crs.value,
+      crs.spawn,
+      crs.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      name = %s AND
+      crs.destroy IS NULL
+    GROUP BY
+      layer.spawn, crs.value, crs.spawn, crs.destroy
+    ",
     dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
     dbGetQuery(con = connection) #nolint
@@ -832,21 +897,29 @@ WHERE
   expect_true(is.na(stored$destroy))
   expect_identical(stored$value, sppolydf@proj4string@projargs)
   stored <- sprintf("
-SELECT
-  layer.spawn AS layerspawn,
-  crs.value,
-  crs.spawn,
-  crs.destroy
-FROM
-  layer
-INNER JOIN
-  crs
-ON
-  layer.hash = crs.layer
-WHERE
-  name = %s AND
-  crs.destroy IS NOT NULL
-",
+    SELECT
+      layer.spawn AS layerspawn,
+      crs.value,
+      crs.spawn,
+      crs.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      name = %s AND
+      crs.destroy IS NOT NULL
+    GROUP BY
+      layer.spawn, crs.value, crs.spawn, crs.destroy
+    ",
     dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
     dbGetQuery(con = connection) #nolint
@@ -856,21 +929,29 @@ WHERE
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   store(x = gv, name = paste0(layername, "crs"), connection = connection)
   stored <- sprintf("
-SELECT
-  layer.spawn AS layerspawn,
-  crs.value,
-  crs.spawn,
-  crs.destroy
-FROM
-  layer
-INNER JOIN
-  crs
-ON
-  layer.hash = crs.layer
-WHERE
-  name = %s AND
-  crs.destroy IS NULL
-",
+    SELECT
+      layer.spawn AS layerspawn,
+      crs.value,
+      crs.spawn,
+      crs.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      name = %s AND
+      crs.destroy IS NULL
+    GROUP BY
+      layer.spawn, crs.value, crs.spawn, crs.destroy
+    ",
     dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
     dbGetQuery(con = connection) #nolint
@@ -880,21 +961,29 @@ WHERE
   expect_true(is.na(stored$destroy))
   expect_identical(stored$value, sppolydf@proj4string@projargs)
   stored <- sprintf("
-SELECT
-  layer.spawn AS layerspawn,
-  crs.value,
-  crs.spawn,
-  crs.destroy
-FROM
-  layer
-INNER JOIN
-  crs
-ON
-  layer.hash = crs.layer
-WHERE
-  name = %s AND
-  crs.destroy IS NOT NULL
-",
+    SELECT
+      layer.spawn AS layerspawn,
+      crs.value,
+      crs.spawn,
+      crs.destroy
+    FROM
+      (
+        layer
+      INNER JOIN
+        layerelement
+      ON
+        layer.hash = layerelement.layer
+      )
+    INNER JOIN
+      crs
+    ON
+      layerelement.hash = crs.element
+    WHERE
+      name = %s AND
+      crs.destroy IS NOT NULL
+    GROUP BY
+      layer.spawn, crs.value, crs.spawn, crs.destroy
+    ",
     dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
   ) %>%
     dbGetQuery(con = connection) #nolint

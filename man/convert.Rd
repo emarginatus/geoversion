@@ -9,20 +9,22 @@
 \alias{convert,list-method}
 \title{Convert a spatial object}
 \usage{
-convert(object, stable.id)
+convert(object, stable.id, ...)
 
-\S4method{convert}{Polygon}(object, stable.id)
+\S4method{convert}{Polygon}(object, stable.id, ...)
 
-\S4method{convert}{Polygons}(object, stable.id)
+\S4method{convert}{Polygons}(object, stable.id, ...)
 
-\S4method{convert}{SpatialPolygonsDataFrame}(object, stable.id)
+\S4method{convert}{SpatialPolygonsDataFrame}(object, stable.id, ...)
 
-\S4method{convert}{list}(object, stable.id)
+\S4method{convert}{list}(object, stable.id, ...)
 }
 \arguments{
 \item{object}{the object to convert}
 
 \item{stable.id}{the name of the variable that holds the stable ID}
+
+\item{...}{other parameters}
 }
 \description{
 Convert a spatial object

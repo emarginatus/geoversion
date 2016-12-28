@@ -79,13 +79,13 @@ setup_db <- function(connection){
       destroy = numeric(0)
     ),
     crs = data.frame(
-      layer = character(0),
+      element = character(0),
       value = character(0),
       spawn = numeric(0),
       destroy = numeric(0)
     ),
     staging_crs = data.frame(
-      layer = character(0),
+      element = character(0),
       value = character(0),
       spawn = numeric(0),
       destroy = numeric(0)

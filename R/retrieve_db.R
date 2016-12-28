@@ -41,114 +41,118 @@ retrieve <- function(name, connection, timestamp = NA_real_){
   }
 
   layerelement <- sprintf("
-SELECT
-  le.id,
-  e.features
-FROM
-  layerelement AS le
-INNER JOIN
-  element AS e
-ON
-  le.hash = e.hash
-WHERE
-  layer = %s AND
-  %s",
-    dbQuoteString(connection, layer), #nolint
-    timerange("e", timestamp, connection)
-  ) %>%
-    dbGetQuery(conn = connection) #nolint
-  features <- sprintf("
-SELECT
-  ff.hash AS hash,
-  ff.feature AS feature
-FROM
-  (
     SELECT
-      e.features
+      le.id,
+      e.features,
+      value AS crs
     FROM
-      layerelement AS le
-    INNER JOIN
-      element AS e
-    ON
-      le.hash = e.hash
-    WHERE
-      layer = %s AND
-      %s
-  ) AS e0
-INNER JOIN
-  features AS ff
-ON
-  e0.features = ff.hash
-",
-    dbQuoteString(connection, layer), #nolint
-    timerange("e", timestamp, connection)
-  ) %>%
-    dbGetQuery(conn = connection) #nolint
-  feature <- sprintf("
-SELECT
-  f.hash AS hash,
-  f.type AS type
-FROM
-  (
-    (
-      SELECT
-        e.features
-      FROM
+      (
         layerelement AS le
       INNER JOIN
         element AS e
       ON
         le.hash = e.hash
-      WHERE
-        layer = %s AND
-        %s
-    ) AS e0
-  INNER JOIN
-    features AS ff
-  ON
-    e0.features = ff.hash
-  )
-INNER JOIN
-  feature AS f
-ON
-  ff.feature = f.hash
-",
+      )
+    INNER JOIN
+      crs
+    ON
+      e.hash = crs.element
+    WHERE
+      layer = %s AND
+      %s",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  features <- sprintf("
+    SELECT
+      ff.hash AS hash,
+      ff.feature AS feature
+    FROM
+      (
+        SELECT
+          e.features
+        FROM
+          layerelement AS le
+        INNER JOIN
+          element AS e
+        ON
+          le.hash = e.hash
+        WHERE
+          layer = %s AND
+          %s
+      ) AS e0
+    INNER JOIN
+      features AS ff
+    ON
+      e0.features = ff.hash",
+    dbQuoteString(connection, layer), #nolint
+    timerange("e", timestamp, connection)
+  ) %>%
+    dbGetQuery(conn = connection) #nolint
+  feature <- sprintf("
+    SELECT
+      f.hash AS hash,
+      f.type AS type
+    FROM
+      (
+        (
+          SELECT
+            e.features
+          FROM
+            layerelement AS le
+          INNER JOIN
+            element AS e
+          ON
+            le.hash = e.hash
+          WHERE
+            layer = %s AND
+            %s
+        ) AS e0
+      INNER JOIN
+        features AS ff
+      ON
+        e0.features = ff.hash
+      )
+    INNER JOIN
+      feature AS f
+    ON
+      ff.feature = f.hash",
     dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
     dbGetQuery(conn = connection) #nolint
 
   coordinates <- sprintf("
-SELECT
-  c.hash AS hash,
-  c.succession AS succession,
-  c.x AS x,
-  c.y AS y
-FROM
-  (
-    (
-      SELECT
-        e.features
-      FROM
-        layerelement AS le
+    SELECT
+      c.hash AS hash,
+      c.succession AS succession,
+      c.x AS x,
+      c.y AS y
+    FROM
+      (
+        (
+          SELECT
+            e.features
+          FROM
+            layerelement AS le
+          INNER JOIN
+            element AS e
+          ON
+            le.hash = e.hash
+          WHERE
+            layer = %s AND
+            %s
+        ) AS e0
       INNER JOIN
-        element AS e
+        features AS ff
       ON
-        le.hash = e.hash
-      WHERE
-        layer = %s AND
-        %s
-    ) AS e0
-  INNER JOIN
-    features AS ff
-  ON
-    e0.features = ff.hash
-  )
-INNER JOIN
-  coordinates AS c
-ON
-  ff.feature = c.hash
-",
+        e0.features = ff.hash
+      )
+    INNER JOIN
+      coordinates AS c
+    ON
+      ff.feature = c.hash",
     dbQuoteString(connection, layer), #nolint
     timerange("e", timestamp, connection)
   ) %>%
@@ -202,20 +206,6 @@ ON
     timerange("av", timestamp, connection)
   ) %>%
     dbGetQuery(conn = connection) #nolint
-  crs <- sprintf("
-    SELECT
-      value
-    FROM
-      crs
-    WHERE
-      layer = %s AND
-      %s",
-    dbQuoteString(connection, layer), #nolint
-    timerange("crs", timestamp, connection)
-  ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
-    "[["("value") %>% #nolint
-    CRS()
 
   new(
     "geoVersion",
@@ -224,7 +214,6 @@ ON
     Features = features,
     LayerElement = layerelement,
     Attribute = attribute,
-    AttributeValue = attribute_value,
-    CRS = crs
+    AttributeValue = attribute_value
   )
 }
