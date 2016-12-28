@@ -27,7 +27,7 @@ Suggests:
 Collate:
     'as_sp.R'
     'geoversion_class.R'
-    'combine.R'
+    'combined.R'
     'convert_polygon.R'
     'imports.R'
     'retrieve_db.R'

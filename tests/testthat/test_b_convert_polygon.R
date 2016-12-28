@@ -99,7 +99,7 @@ test_that(
     poly_c2 <- poly_c <- convert(polygon[[1]])
     poly_c2@CRS <- sp::CRS("+proj=longlat +datum=WGS84")
     expect_error(
-      combine(poly_c, poly_c2),
+      combined(poly_c, poly_c2),
       "CRS not unique"
     )
   }

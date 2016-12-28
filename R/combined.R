@@ -1,23 +1,23 @@
 #' Combine objects
 #' @param ... the objects
-#' @name combine
-#' @rdname combine
-#' @exportMethod combine
+#' @name combined
+#' @rdname combined
+#' @exportMethod combined
 #' @docType methods
 #' @importFrom methods setGeneric
 setGeneric(
-  name = "combine",
+  name = "combined",
   def = function(...){
-    standard.generic("combine") #nocov
+    standard.generic("combined") #nocov
   }
 )
 
-#' @rdname combine
+#' @rdname combined
 #' @importFrom methods setMethod new
 #' @importFrom dplyr %>% bind_rows distinct_
 #' @include geoversion_class.R
 setMethod(
-  f = "combine",
+  f = "combined",
   signature = "geoVersion",
   definition = function(...){
     coordinates <- lapply(

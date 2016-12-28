@@ -134,7 +134,7 @@ setMethod(
   signature = "list",
   definition = function(object, stable.id){
     do.call(
-      combine,
+      combined,
       lapply(object, convert)
     )
   }
