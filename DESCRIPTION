@@ -33,4 +33,5 @@ Collate:
     'retrieve_db.R'
     'setup_db.R'
     'store_db.R'
+    'valid_crs.R'
 VignetteBuilder: knitr
