@@ -64,10 +64,11 @@ setMethod(
 
 #' @rdname convert
 #' @importFrom methods setMethod
-#' @importFrom dplyr %>% group_by_ summarise_ mutate_ inner_join select_ filter_ rowwise mutate_ rename_ mutate_each funs
+#' @importFrom dplyr %>% group_by_ summarise_ mutate_ inner_join select_ filter_ rowwise mutate_ rename_ mutate_each funs arrange_ do_ distinct_ left_join
 #' @importFrom digest sha1
-#' @importFrom tidyr gather
+#' @importFrom tidyr gather unnest_
 #' @importFrom assertthat assert_that is.string has_name
+#' @importFrom methods validObject
 #' @importClassesFrom sp SpatialPolygonsDataFrame
 setMethod(
   f = "convert",
@@ -79,10 +80,73 @@ setMethod(
     if (is.null(dots$crs.id)) {
       crs <- object@proj4string@projargs %>%
         rep(length(object))
+      dots$transformation <- data.frame(
+        from = character(0),
+        to = character(0),
+        stringsAsFactors = FALSE
+      )
+      dots$reference <- data.frame(
+        from = character(0),
+        source_x = numeric(0),
+        source_y = numeric(0),
+        target_x = numeric(0),
+        target_y = numeric(0),
+        stringsAsFactors = FALSE
+      )
     } else {
       assert_that(is.string(dots$crs.id))
       assert_that(has_name(object, dots$crs.id))
       crs <- object[[dots$crs.id]]
+      test_crs <- unique(crs)
+      no_transformation <- valid_crs(as.character(test_crs))
+      if (all(no_transformation)) {
+        dots$transformation <- data.frame(
+          from = character(0),
+          to = character(0),
+          stringsAsFactors = FALSE
+        )
+        dots$reference <- data.frame(
+          from = character(0),
+          source_x = numeric(0),
+          source_y = numeric(0),
+          target_x = numeric(0),
+          target_y = numeric(0),
+          stringsAsFactors = FALSE
+        )
+      } else {
+        if (is.null(dots$reference) || is.null(dots$transformation)) {
+          stop("Non standard CRS require both reference and transformation.")
+        }
+        dots$reference <- dots$reference %>%
+          group_by_(~from) %>%
+          do_(
+            ref = ~select_(., ~source_x, ~source_y, ~target_x, ~target_y) %>%
+              arrange_(~source_x, ~source_y, ~target_x, ~target_y) %>%
+              mutate_(
+                hash = ~list(source_x, source_y, target_x, target_y) %>%
+                  sha1()
+              )
+          ) %>%
+          unnest_(~ref)
+        dots$transformation <- dots$reference %>%
+          distinct_(~from, ~hash) %>%
+          inner_join(dots$transformation, by = "from") %>%
+          select_(from = ~hash, ~to)
+        crs <- data.frame(
+          from = crs,
+          stringsAsFactors = FALSE
+        ) %>%
+          left_join(
+            dots$reference %>%
+              distinct_(~from, ~hash),
+            by = "from"
+          ) %>%
+          select_(~hash) %>%
+          unlist() %>%
+          unname()
+        dots$reference <- dots$reference %>%
+          select_(~-from, from = ~hash)
+      }
       object[[dots$crs.id]] <- NULL
     }
     poly <- convert(object@polygons)
@@ -138,6 +202,9 @@ setMethod(
       ) %>%
       select_(~element, attribute = ~id, ~value) %>%
       as.data.frame()
+    poly@Transformation <- dots$transformation
+    poly@Reference <- dots$reference
+    validObject(poly)
     return(poly)
   }
 )

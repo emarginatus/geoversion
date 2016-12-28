@@ -97,10 +97,13 @@ test_that(
 test_that(
   "the crs field takes precedence", {
     sppolydf$junk <- "+proj=longlat +ellps=WGS84"
-    output <- convert(
-      object = sppolydf,
-      stable.id = "PermanentID",
-      crs.id = "junk"
+    expect_is(
+      output <- convert(
+        object = sppolydf,
+        stable.id = "PermanentID",
+        crs.id = "junk"
+      ),
+      "geoVersion"
     )
     expect_identical(output@LayerElement$crs, sppolydf$junk)
     expect_identical(
@@ -109,6 +112,15 @@ test_that(
         nrow(),
       0L
     )
+    expect_is(
+      output <- convert(
+        object = sppolydf_90ccw,
+        stable.id = "PermanentID",
+        crs.id = "crs",
+        reference = reference_90ccw,
+        transformation = transformation_90ccw
+      ),
+      "geoVersion"
+    )
   }
-
 )
