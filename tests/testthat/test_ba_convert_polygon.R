@@ -94,3 +94,21 @@ test_that(
     expect_true(all(poly_c@Coordinates$hash %in% poly_c@Feature$hash))
   }
 )
+test_that(
+  "the crs field takes precedence", {
+    sppolydf$junk <- "+proj=longlat +ellps=WGS84"
+    output <- convert(
+      object = sppolydf,
+      stable.id = "PermanentID",
+      crs.id = "junk"
+    )
+    expect_identical(output@LayerElement$crs, sppolydf$junk)
+    expect_identical(
+      output@Attribute %>%
+        filter_(~name == "junk") %>%
+        nrow(),
+      0L
+    )
+  }
+
+)

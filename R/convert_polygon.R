@@ -67,15 +67,23 @@ setMethod(
 #' @importFrom dplyr %>% group_by_ summarise_ mutate_ inner_join select_ filter_ rowwise mutate_ rename_ mutate_each funs
 #' @importFrom digest sha1
 #' @importFrom tidyr gather
+#' @importFrom assertthat assert_that is.string has_name
 #' @importClassesFrom sp SpatialPolygonsDataFrame
 setMethod(
   f = "convert",
   signature = "SpatialPolygonsDataFrame",
   definition = function(object, stable.id, ...){
+    assert_that(is.string(stable.id))
+    assert_that(has_name(object, stable.id))
     dots <- list(...)
     if (is.null(dots$crs.id)) {
       crs <- object@proj4string@projargs %>%
         rep(length(object))
+    } else {
+      assert_that(is.string(dots$crs.id))
+      assert_that(has_name(object, dots$crs.id))
+      crs <- object[[dots$crs.id]]
+      object[[dots$crs.id]] <- NULL
     }
     poly <- convert(object@polygons)
     hash <- poly@Features %>%
