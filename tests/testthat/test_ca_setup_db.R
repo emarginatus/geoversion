@@ -10,10 +10,11 @@ test_that(
       DBI::dbListTables(connection),
       c(
         "attribute", "attributevalue", "coordinates", "crs", "element",
-        "feature", "features", "layer", "layerelement", "staging_attribute",
-        "staging_attributevalue", "staging_coordinates", "staging_crs",
-        "staging_element", "staging_feature", "staging_features",
-        "staging_layer", "staging_layerelement"
+        "feature", "features", "layer", "layerelement", "reference",
+        "staging_attribute", "staging_attributevalue", "staging_coordinates",
+        "staging_crs", "staging_element", "staging_feature", "staging_features",
+        "staging_layer", "staging_layerelement", "staging_reference",
+        "staging_transformation", "transformation"
       )
     )
     expect_identical(
@@ -77,8 +78,8 @@ test_that(
       c("element", "value", "spawn", "destroy")
     )
     expect_identical(
-      DBI::dbListFields(connection, "layer"),
-      DBI::dbListFields(connection, "staging_layer")
+      DBI::dbListFields(connection, "crs"),
+      DBI::dbListFields(connection, "staging_crs")
     )
     expect_identical(
       DBI::dbListFields(connection, "layerelement"),
@@ -87,5 +88,21 @@ test_that(
     expect_identical(
       DBI::dbListFields(connection, "layerelement"),
       DBI::dbListFields(connection, "staging_layerelement")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "reference"),
+      c("from", "source_x", "source_y", "target_x", "target_y")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "reference"),
+      DBI::dbListFields(connection, "staging_reference")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "transformation"),
+      c("from", "to")
+    )
+    expect_identical(
+      DBI::dbListFields(connection, "transformation"),
+      DBI::dbListFields(connection, "staging_transformation")
     )
 })
