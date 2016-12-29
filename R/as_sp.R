@@ -42,8 +42,8 @@ as_sp <- function(x){
     unlist() %>%
     unname() %>%
     CRS()
-  SpatialPolygons(polygons$polygons, proj4string = crs) %>% #nolint
-    SpatialPolygonsDataFrame( #nolint
+  sp::SpatialPolygons(polygons$polygons, proj4string = crs) %>%
+    sp::SpatialPolygonsDataFrame(
       data = attribute %>%
         select_(~-features, PermanentID = ~element)
     )

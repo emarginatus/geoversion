@@ -144,7 +144,7 @@ setup_db <- function(connection){
     )
   )
   for (i in seq_along(structure)) {
-    dbWriteTable( # nolint
+    DBI::dbWriteTable(
       conn = connection,
       name = names(structure)[i],
       value = structure[[i]])

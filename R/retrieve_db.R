@@ -16,14 +16,14 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     if (is.na(timestamp)) {
       timerange <- sprintf(
         "%s.destroy IS NULL",
-        dbQuoteIdentifier(conn = connection, name) #nolint
+        DBI::dbQuoteIdentifier(conn = connection, name)
       )
     } else {
       timerange <- sprintf(
         "%s.spawn >= %.21f AND\n%.21f < %s.destroy",
-        dbQuoteIdentifier(conn = connection, name), #nolint
+        DBI::dbQuoteIdentifier(conn = connection, name),
         timestamp,
-        dbQuoteIdentifier(conn = connection, name), #nolint
+        DBI::dbQuoteIdentifier(conn = connection, name),
         timestamp
       )
     }
@@ -31,10 +31,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
 
   layer <- sprintf(
     "SELECT hash FROM layer WHERE name = %s AND %s",
-    dbQuoteIdentifier(connection, name), #nolint
+    DBI::dbQuoteIdentifier(connection, name),
     timerange("layer", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
+    DBI::dbGetQuery(conn = connection) %>%
     "[["("hash") #nolint
   if (length(layer) == 0) {
     stop("There is no layer named '", name, "'")
@@ -60,10 +60,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     WHERE
       layer = %s AND
       %s",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
   features <- sprintf("
     SELECT
       ff.hash AS hash,
@@ -86,10 +86,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
       features AS ff
     ON
       e0.features = ff.hash",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
   feature <- sprintf("
     SELECT
       f.hash AS hash,
@@ -118,10 +118,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
       feature AS f
     ON
       ff.feature = f.hash",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
 
   coordinates <- sprintf("
     SELECT
@@ -153,10 +153,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
       coordinates AS c
     ON
       ff.feature = c.hash",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("e", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
 
   attribute_value <- sprintf("
     SELECT
@@ -175,10 +175,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     ORDER BY
       le.id, av.attribute
     ",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("av", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
   attribute <- sprintf("
     SELECT
       a.id AS id,
@@ -202,10 +202,10 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     GROUP BY
       a.id, name, type
     ",
-    dbQuoteString(connection, layer), #nolint
+    DBI::dbQuoteString(connection, layer),
     timerange("av", timestamp, connection)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
 
   new(
     "geoVersion",

@@ -107,14 +107,14 @@ setValidity(
     assert_that(has_name(object@Reference, "target_x"))
     assert_that(has_name(object@Reference, "target_y"))
 
-    assert_that(noNA(object@Coordinates)) #nolint
-    assert_that(noNA(object@Feature)) #nolint
-    assert_that(noNA(object@Features)) #nolint
-    assert_that(noNA(object@LayerElement[, c("id", "features")])) #nolint
-    assert_that(noNA(object@Attribute)) #nolint
-    assert_that(noNA(object@AttributeValue)) #nolint
-    assert_that(noNA(object@Transformation$source_crs)) #nolint
-    assert_that(noNA(object@Reference)) #nolint
+    assert_that(assertthat::noNA(object@Coordinates))
+    assert_that(assertthat::noNA(object@Feature))
+    assert_that(assertthat::noNA(object@Features))
+    assert_that(assertthat::noNA(object@LayerElement[, c("id", "features")]))
+    assert_that(assertthat::noNA(object@Attribute))
+    assert_that(assertthat::noNA(object@AttributeValue))
+    assert_that(assertthat::noNA(object@Transformation$source_crs))
+    assert_that(assertthat::noNA(object@Reference))
 
     if (anyDuplicated(object@Coordinates[, c("hash", "succession")])) {
       stop("Duplicated hash - succession combinations in the Coordinates slot")
@@ -163,8 +163,8 @@ setValidity(
       !all(test_crs[!no_transformation] %in% object@Transformation$source_crs)
     ) {
       stop(
-"All non standards CRS in the LayerElement slot must have a match in source_crs field
-of the Transformation slot"
+"All non standards CRS in the LayerElement slot must have a match in source_crs
+field of the Transformation slot"
       )
     }
     if (
@@ -176,7 +176,9 @@ of the Transformation slot"
     }
     test_crs <- unique(object@Transformation$target_crs)
     if (!all(valid_crs(test_crs))) {
-      stop("All crs in the to field target_crs the Transformation slot must be valid")
+      stop(
+"All crs in the to field target_crs the Transformation slot must be valid"
+)
     }
   }
 )

@@ -3,7 +3,7 @@ layername <- "test"
 test_that("it stores a geoVersion correctly in an empty database", {
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   store(x = gv, name = layername, connection = connection)
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -36,16 +36,16 @@ test_that("it stores a geoVersion correctly in an empty database", {
   expect_false(is.na(element$spawn))
   expect_true(is.na(element$destroy))
 
-  features <- dbReadTable(connection, "features") #nolint
+  features <- DBI::dbReadTable(connection, "features")
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature") #nolint
+  feature <- DBI::dbReadTable(connection, "feature")
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates") #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates")
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -54,7 +54,7 @@ test_that("it stores a geoVersion correctly in an empty database", {
       arrange_(~id)
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
     SELECT
       id AS element,
@@ -90,7 +90,7 @@ test_that(
   gv <- convert(object = sppolydf, stable.id = "PermanentID")
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = layername, connection = connection)
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -124,16 +124,16 @@ test_that(
   expect_true(is.na(element$destroy))
   expect_lt(element$spawn, timestamp)
 
-  features <- dbReadTable(connection, "features") #nolint
+  features <- DBI::dbReadTable(connection, "features")
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature") #nolint
+  feature <- DBI::dbReadTable(connection, "feature")
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates") #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates")
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -142,7 +142,7 @@ test_that(
       arrange_(~id)
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
 SELECT
   id AS element,
@@ -179,7 +179,7 @@ test_that("it handles the removal of elements", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = layername, connection = connection)
 
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -218,7 +218,7 @@ test_that("it handles the removal of elements", {
   )
   expect_gt(element$destroy[2], timestamp)
 
-  features <- dbReadTable(connection, "features") %>% #nolint
+  features <- DBI::dbReadTable(connection, "features") %>%
     semi_join(
       element %>%
         filter_(~is.na(destroy)),
@@ -226,15 +226,15 @@ test_that("it handles the removal of elements", {
     )
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature") %>% #nolint
+  feature <- DBI::dbReadTable(connection, "feature") %>%
     semi_join(features, by = c("hash" = "feature"))
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates") %>%
     semi_join(feature, by = "hash")
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -243,7 +243,7 @@ test_that("it handles the removal of elements", {
       arrange_(~id)
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
     SELECT
       id AS element,
@@ -292,7 +292,7 @@ test_that("store() re-uses features", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = layername, connection = connection)
 
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -342,7 +342,7 @@ test_that("store() re-uses features", {
     c(TRUE, FALSE, TRUE)
   )
 
-  features <- dbReadTable(connection, "features") %>% #nolint
+  features <- DBI::dbReadTable(connection, "features") %>%
     semi_join(
       element %>%
         filter_(~is.na(destroy)),
@@ -350,15 +350,15 @@ test_that("store() re-uses features", {
     )
   expect_identical(features, gv@Features)
 
-  feature <- dbReadTable(connection, "feature") %>% #nolint
+  feature <- DBI::dbReadTable(connection, "feature") %>%
     semi_join(features, by = c("hash" = "feature"))
   expect_identical(feature, gv@Feature)
 
-  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates") %>%
     semi_join(feature, by = "hash")
   expect_identical(coordinates, gv@Coordinates)
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -367,7 +367,7 @@ test_that("store() re-uses features", {
       arrange_(~id)
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
     SELECT
       id AS element,
@@ -416,7 +416,7 @@ test_that("handle elements with changes in features", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = layername, connection = connection)
 
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -466,7 +466,7 @@ test_that("handle elements with changes in features", {
     c(TRUE, FALSE, FALSE, TRUE)
   )
 
-  features <- dbReadTable(connection, "features") %>% #nolint
+  features <- DBI::dbReadTable(connection, "features") %>%
     semi_join(
       element %>%
         filter_(~is.na(destroy)),
@@ -479,7 +479,7 @@ test_that("handle elements with changes in features", {
       arrange_(~hash, ~feature)
   )
 
-  feature <- dbReadTable(connection, "feature") %>% #nolint
+  feature <- DBI::dbReadTable(connection, "feature") %>%
     semi_join(features, by = c("hash" = "feature")) %>%
     arrange_(~hash)
   expect_identical(
@@ -488,7 +488,7 @@ test_that("handle elements with changes in features", {
       arrange_(~hash)
   )
 
-  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates") %>%
     semi_join(feature, by = "hash") %>%
     arrange_(~hash, ~succession)
   expect_identical(
@@ -497,7 +497,7 @@ test_that("handle elements with changes in features", {
       arrange_(~hash, ~succession)
   )
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     attribute %>%
       arrange_(~id),
@@ -506,7 +506,7 @@ test_that("handle elements with changes in features", {
       arrange_(~id)
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
     SELECT
       id AS element,
@@ -549,7 +549,7 @@ test_that("handle elements with change in attributevalues", {
   timestamp <- as.numeric(Sys.time())
   store(x = gv, name = layername, connection = connection)
 
-  element <- dbGetQuery( #nolint
+  element <- DBI::dbGetQuery(
     connection, "
     SELECT
       id,
@@ -599,7 +599,7 @@ test_that("handle elements with change in attributevalues", {
     c(TRUE, FALSE, FALSE, TRUE)
   )
 
-  features <- dbReadTable(connection, "features") %>% #nolint
+  features <- DBI::dbReadTable(connection, "features") %>%
     semi_join(
       element %>%
         filter_(~is.na(destroy)),
@@ -612,7 +612,7 @@ test_that("handle elements with change in attributevalues", {
       arrange_(~hash)
   )
 
-  feature <- dbReadTable(connection, "feature") %>% #nolint
+  feature <- DBI::dbReadTable(connection, "feature") %>%
     semi_join(features, by = c("hash" = "feature")) %>%
     arrange_(~hash)
   expect_identical(
@@ -621,7 +621,7 @@ test_that("handle elements with change in attributevalues", {
       arrange_(~hash)
   )
 
-  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates") %>%
     semi_join(feature, by = "hash") %>%
     arrange_(~hash, ~succession)
   expect_identical(
@@ -630,7 +630,7 @@ test_that("handle elements with change in attributevalues", {
       arrange_(~hash, ~succession)
   )
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     gv@Attribute %>%
       anti_join(attribute, by = c("id", "name", "type")) %>%
@@ -638,7 +638,7 @@ test_that("handle elements with change in attributevalues", {
     0L
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, "
     SELECT
       id AS element,
@@ -704,9 +704,9 @@ test_that("it re-uses features across layers", {
       layerelement.hash = crs.element
     WHERE
       layer.name = %s",
-    dbQuoteString(connection, paste0(layername, 2)) #nolint
+    DBI::dbQuoteString(connection, paste0(layername, 2))
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
   expect_identical(
     element %>%
       group_by_(~features) %>%
@@ -736,7 +736,7 @@ test_that("it re-uses features across layers", {
     TRUE
   )
 
-  features <- dbReadTable(connection, "features") %>% #nolint
+  features <- DBI::dbReadTable(connection, "features") %>%
     semi_join(
       element %>%
         filter_(~is.na(destroy)),
@@ -749,7 +749,7 @@ test_that("it re-uses features across layers", {
       arrange_(~hash)
   )
 
-  feature <- dbReadTable(connection, "feature") %>% #nolint
+  feature <- DBI::dbReadTable(connection, "feature") %>%
     semi_join(features, by = c("hash" = "feature")) %>%
     arrange_(~hash)
   expect_identical(
@@ -758,7 +758,7 @@ test_that("it re-uses features across layers", {
       arrange_(~hash)
   )
 
-  coordinates <- dbReadTable(connection, "coordinates") %>% #nolint
+  coordinates <- DBI::dbReadTable(connection, "coordinates") %>%
     semi_join(feature, by = "hash") %>%
     arrange_(~hash, ~succession)
   expect_identical(
@@ -767,7 +767,7 @@ test_that("it re-uses features across layers", {
       arrange_(~hash, ~succession)
   )
 
-  attribute <- dbReadTable(connection, "attribute") #nolint
+  attribute <- DBI::dbReadTable(connection, "attribute")
   expect_identical(
     gv@Attribute %>%
       anti_join(attribute, by = c("id", "name", "type")) %>%
@@ -775,7 +775,7 @@ test_that("it re-uses features across layers", {
     0L
   )
 
-  attributevalue <- dbGetQuery( #nolint
+  attributevalue <- DBI::dbGetQuery(
     connection, sprintf("
     SELECT
       id AS element,
@@ -854,9 +854,9 @@ test_that("it sets and updates the correct CRS", {
     GROUP BY
       layer.spawn, crs.value, crs.spawn, crs.destroy
     ",
-    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
+    DBI::dbQuoteString(conn = connection, paste0(layername, "crs"))
   ) %>%
-    dbGetQuery(con = connection) #nolint
+    DBI::dbGetQuery(con = connection)
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -888,9 +888,9 @@ test_that("it sets and updates the correct CRS", {
     GROUP BY
       layer.spawn, crs.value, crs.spawn, crs.destroy
     ",
-    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
+    DBI::dbQuoteString(conn = connection, paste0(layername, "crs"))
   ) %>%
-    dbGetQuery(con = connection) #nolint
+    DBI::dbGetQuery(con = connection)
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -920,9 +920,9 @@ test_that("it sets and updates the correct CRS", {
     GROUP BY
       layer.spawn, crs.value, crs.spawn, crs.destroy
     ",
-    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
+    DBI::dbQuoteString(conn = connection, paste0(layername, "crs"))
   ) %>%
-    dbGetQuery(con = connection) #nolint
+    DBI::dbGetQuery(con = connection)
   expect_identical(nrow(stored), 0L)
 
   sppolydf@proj4string <- CRS("+proj=longlat +datum=WGS84")
@@ -952,9 +952,9 @@ test_that("it sets and updates the correct CRS", {
     GROUP BY
       layer.spawn, crs.value, crs.spawn, crs.destroy
     ",
-    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
+    DBI::dbQuoteString(conn = connection, paste0(layername, "crs"))
   ) %>%
-    dbGetQuery(con = connection) #nolint
+    DBI::dbGetQuery(con = connection)
   expect_identical(nrow(stored), 1L)
   expect_equal(stored$layerspawn, stored$spawn)
   expect_false(is.na(stored$spawn))
@@ -984,8 +984,21 @@ test_that("it sets and updates the correct CRS", {
     GROUP BY
       layer.spawn, crs.value, crs.spawn, crs.destroy
     ",
-    dbQuoteString(conn = connection, paste0(layername, "crs")) #nolint
+    DBI::dbQuoteString(conn = connection, paste0(layername, "crs"))
   ) %>%
-    dbGetQuery(con = connection) #nolint
+    DBI::dbGetQuery(con = connection)
   expect_identical(nrow(stored), 1L)
 })
+
+test_that(
+  "store() handles objects with transformation and reference", {
+    gv <- convert(
+      object = sppolydf_90ccw,
+      stable.id = "PermanentID",
+      crs.id = "crs",
+      reference = reference_90ccw,
+      transformation = transformation_90ccw
+    )
+    store(x = gv, name = paste(layername, "trans"), connection = connection)
+ }
+)

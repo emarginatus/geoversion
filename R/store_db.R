@@ -10,7 +10,7 @@ store <- function(x, name, connection){
   assert_that(inherits(x, "geoVersion"))
   assert_that(is.string(name))
   assert_that(inherits(connection, "DBIConnection"))
-  assert_that(dbIsValid(connection)) #nolint
+  assert_that(DBI::dbIsValid(connection))
 
   timestamp <- as.numeric(Sys.time())
 
@@ -35,10 +35,10 @@ store <- function(x, name, connection){
       name = %s AND
       type = %s AND
       destroy IS NULL",
-    dbQuoteString(connection, name), #nolint
-    dbQuoteString(connection, type) #nolint
+    DBI::dbQuoteString(connection, name),
+    DBI::dbQuoteString(connection, type)
   ) %>%
-    dbGetQuery(conn = connection) #nolint
+    DBI::dbGetQuery(conn = connection)
   if (nrow(layerhash) == 0) {
     layerhash <- sha1(list(Name = name, Type = type, Spawn = timestamp))
     data.frame(
@@ -49,16 +49,16 @@ store <- function(x, name, connection){
       destroy = NA_real_,
       stringsAsFactors = FALSE
     ) %>%
-      dbWriteTable(conn = connection, name = "layer", append = TRUE) #nolint
+      DBI::dbWriteTable(conn = connection, name = "layer", append = TRUE)
   } else {
     layerhash <- layerhash$hash
   }
 
   sprintf(
     "SELECT id, hash FROM layerelement WHERE layer = %s",
-    dbQuoteString(connection, layerhash) #nolint
+    DBI::dbQuoteString(connection, layerhash)
   ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
+    DBI::dbGetQuery(conn = connection) %>%
     anti_join(x = x@LayerElement, by = "id") %>%
     rowwise() %>%
     transmute_(
@@ -67,7 +67,7 @@ store <- function(x, name, connection){
       hash = ~sha1(list(Layer = layer, ID = id))
     ) %>%
     as.data.frame() %>%
-    dbWriteTable( #nolint
+    DBI::dbWriteTable(
       conn = connection,
       name = "layerelement",
       append = TRUE
@@ -96,9 +96,9 @@ store <- function(x, name, connection){
     WHERE
       element.destroy IS NULL AND
       layer.name = %s",
-      dbQuoteString(connection, name) #nolint
+      DBI::dbQuoteString(connection, name)
     ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
+    DBI::dbGetQuery(conn = connection) %>%
     full_join(x@LayerElement, by = "id") %>%
     rowwise() %>%
     mutate_(
@@ -125,31 +125,31 @@ store <- function(x, name, connection){
         WHERE
           hash = %s AND features = %s AND destroy IS NULL",
         timestamp,
-        dbQuoteString(connection, hash), #nolint
-        dbQuoteString(connection, features.x) #nolint
+        DBI::dbQuoteString(connection, hash),
+        DBI::dbQuoteString(connection, features.x)
       )
     )
   sapply(
     old$sql,
     function(statement){
-      dbGetQuery(connection, statement) #nolint
+      DBI::dbGetQuery(connection, statement)
     }
   )
   new.element <- element %>%
     filter_(~is.na(features.x) | features.x != features.y) %>%
     mutate_(spawn = timestamp, destroy = NA_real_) %>%
     select_(~hash, features = ~features.y, ~spawn, ~destroy)
-  dbWriteTable(connection, "element", new.element, append = TRUE) #nolint
+  DBI::dbWriteTable(connection, "element", new.element, append = TRUE)
 
   new.features <- x@Features %>%
     semi_join(new.element, by = c("hash" = "features"))
-  dbWriteTable( #nolint
+  DBI::dbWriteTable(
     new.features,
     conn = connection,
     name = "staging_features",
     overwrite = TRUE
   )
-  dbGetQuery( #nolint
+  DBI::dbGetQuery(
     connection, "
     INSERT INTO
       features
@@ -172,13 +172,13 @@ store <- function(x, name, connection){
 
   new.feature <- x@Feature %>%
     semi_join(new.features, by = c("hash" = "feature"))
-  dbWriteTable( #nolint
+  DBI::dbWriteTable(
     new.feature,
     conn = connection,
     name = "staging_feature",
     overwrite = TRUE
   )
-  dbGetQuery( #nolint
+  DBI::dbGetQuery(
     connection, "
       INSERT INTO
         feature
@@ -200,12 +200,12 @@ store <- function(x, name, connection){
 
   x@Coordinates %>%
     semi_join(new.feature, by = "hash") %>%
-    dbWriteTable( #nolint
+    DBI::dbWriteTable(
       conn = connection,
       name = "staging_coordinates",
       overwrite = TRUE
     )
-  dbGetQuery( #nolint
+  DBI::dbGetQuery(
     connection, "
     INSERT INTO
       coordinates
@@ -227,12 +227,12 @@ store <- function(x, name, connection){
 
   x@Attribute %>%
     select_(~id, ~name, ~type) %>%
-    dbWriteTable( #nolint
+    DBI::dbWriteTable(
       conn = connection,
       name = "staging_attribute",
       overwrite = TRUE
     )
-  dbGetQuery( #nolint
+  DBI::dbGetQuery(
     connection, "
     INSERT INTO
       attribute
@@ -273,9 +273,9 @@ store <- function(x, name, connection){
     WHERE
       attributevalue.destroy IS NULL AND
       layer.name = %s",
-    dbQuoteString(connection, name) #nolint
+    DBI::dbQuoteString(connection, name)
   ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
+    DBI::dbGetQuery(conn = connection) %>%
     full_join(
       x@AttributeValue %>%
         rowwise() %>%
@@ -295,21 +295,21 @@ store <- function(x, name, connection){
         WHERE
           element = %s AND attribute = %s AND destroy IS NULL",
         timestamp,
-        dbQuoteString(connection, element), #nolint
-        dbQuoteString(connection, attribute) #nolint
+        DBI::dbQuoteString(connection, element),
+        DBI::dbQuoteString(connection, attribute)
       )
     )
   sapply(
     old$sql,
     function(statement){
-      dbGetQuery(connection, statement) #nolint
+      DBI::dbGetQuery(connection, statement)
     }
   )
   attributevalue %>%
     filter_(~is.na(value.x) | value.x != value.y) %>%
     mutate_(spawn = timestamp, destroy = NA_real_) %>%
     select_(~element, ~attribute, value = ~value.y, ~spawn, ~destroy) %>%
-    dbWriteTable( #nolint
+    DBI::dbWriteTable(
       conn = connection,
       name = "attributevalue",
       append = TRUE
@@ -330,9 +330,9 @@ store <- function(x, name, connection){
     WHERE
       le.layer = %s AND
       crs.destroy IS NULL",
-    dbQuoteString(connection, layerhash) #nolint
+    DBI::dbQuoteString(connection, layerhash)
   ) %>%
-    dbGetQuery(conn = connection) %>% #nolint
+    DBI::dbGetQuery(conn = connection) %>%
     full_join(
       element %>%
         select_(~id, ~hash) %>%
@@ -350,13 +350,13 @@ store <- function(x, name, connection){
         WHERE
           element = %s AND destroy IS NULL",
         timestamp,
-        dbQuoteString(connection, element) #nolint
+        DBI::dbQuoteString(connection, element)
       )
     )
   sapply(
     old$sql,
     function(statement){
-      dbGetQuery(connection, statement) #nolint
+      DBI::dbGetQuery(connection, statement)
     }
   )
   new.crs <- crs %>%
@@ -367,7 +367,7 @@ store <- function(x, name, connection){
     ) %>%
     mutate_(spawn = timestamp, destroy = NA_real_) %>%
     select_(element = ~hash, value = ~crs.y, ~spawn, ~destroy)
-  dbWriteTable(connection, "crs", new.crs, append = TRUE) #nolint
+  DBI::dbWriteTable(connection, "crs", new.crs, append = TRUE)
 
   return(invisible(NULL))
 }

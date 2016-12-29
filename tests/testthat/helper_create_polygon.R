@@ -35,15 +35,19 @@ polygons <- list(
   sp::Polygons(polygon[2:3], 2),
   sp::Polygons(polygon[2], 3)
 )
-sppoly <- sp::SpatialPolygons(polygons) #nolint
-sppolydf <- sp::SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ]) #nolint
-sppolydf.bis <- sp::SpatialPolygonsDataFrame( #nolint
+sppoly <- sp::SpatialPolygons(polygons)
+sppolydf <- sp::SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ])
+sppolydf.bis <- sp::SpatialPolygonsDataFrame(
   sppoly[c(1, 3)],
   df[1:2, ],
   match.ID = FALSE
 )
 rownames(df) <- c("A", "B", "C")
-sppolydf2 <- sp::SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ], match.ID = FALSE) #nolint
+sppolydf2 <- sp::SpatialPolygonsDataFrame(
+  sppoly[1:2],
+  df[1:2, ],
+  match.ID = FALSE
+)
 reference_90ccw <- data.frame(
   source_crs = 1,
   source_x = c(0, 0, 1, 1),
