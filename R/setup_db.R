@@ -119,24 +119,24 @@ setup_db <- function(connection){
       stringsAsFactors = FALSE
     ),
     transformation = data.frame(
-      from = character(0),
-      to = character(0),
+      source_crs = character(0),
+      target_crs = character(0),
       stringsAsFactors = FALSE
     ),
     staging_transformation = data.frame(
-      from = character(0),
-      to = character(0),
+      source_crs = character(0),
+      target_crs = character(0),
       stringsAsFactors = FALSE
     ),
     reference = data.frame(
-      from = character(0),
+      source_crs = character(0),
       source_x = numeric(0),
       source_y = numeric(0),
       target_x = numeric(0),
       target_y = numeric(0)
     ),
     staging_reference = data.frame(
-      from = character(0),
+      source_crs = character(0),
       source_x = numeric(0),
       source_y = numeric(0),
       target_x = numeric(0),

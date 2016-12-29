@@ -91,7 +91,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "reference"),
-      c("from", "source_x", "source_y", "target_x", "target_y")
+      c("source_crs", "source_x", "source_y", "target_x", "target_y")
     )
     expect_identical(
       DBI::dbListFields(connection, "reference"),
@@ -99,7 +99,7 @@ test_that(
     )
     expect_identical(
       DBI::dbListFields(connection, "transformation"),
-      c("from", "to")
+      c("source_crs", "target_crs")
     )
     expect_identical(
       DBI::dbListFields(connection, "transformation"),

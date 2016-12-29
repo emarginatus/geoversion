@@ -55,12 +55,12 @@ setClass(
       stringsAsFactors = FALSE
     ),
     Transformation = data.frame(
-      from = character(0),
-      to = character(0),
+      source_crs = character(0),
+      target_crs = character(0),
       stringsAsFactors = FALSE
     ),
     Reference = data.frame(
-      from = character(0),
+      source_crs = character(0),
       source_x = numeric(0),
       source_y = numeric(0),
       target_x = numeric(0),
@@ -98,10 +98,10 @@ setValidity(
     assert_that(has_name(object@AttributeValue, "attribute"))
     assert_that(has_name(object@AttributeValue, "value"))
 
-    assert_that(has_name(object@Transformation, "from"))
-    assert_that(has_name(object@Transformation, "to"))
+    assert_that(has_name(object@Transformation, "source_crs"))
+    assert_that(has_name(object@Transformation, "target_crs"))
 
-    assert_that(has_name(object@Reference, "from"))
+    assert_that(has_name(object@Reference, "source_crs"))
     assert_that(has_name(object@Reference, "source_x"))
     assert_that(has_name(object@Reference, "source_y"))
     assert_that(has_name(object@Reference, "target_x"))
@@ -113,7 +113,7 @@ setValidity(
     assert_that(noNA(object@LayerElement[, c("id", "features")])) #nolint
     assert_that(noNA(object@Attribute)) #nolint
     assert_that(noNA(object@AttributeValue)) #nolint
-    assert_that(noNA(object@Transformation$from)) #nolint
+    assert_that(noNA(object@Transformation$source_crs)) #nolint
     assert_that(noNA(object@Reference)) #nolint
 
     if (anyDuplicated(object@Coordinates[, c("hash", "succession")])) {
@@ -134,8 +134,8 @@ setValidity(
     if (anyDuplicated(object@AttributeValue[, c("element", "attribute")])) {
       stop("Duplicated id in the AtributeValue slot")
     }
-    if (anyDuplicated(object@Transformation$from)) {
-      stop("Duplicated from in the Transformation slot")
+    if (anyDuplicated(object@Transformation$source_crs)) {
+      stop("Duplicated source_crs in the Transformation slot")
     }
 
     if (any(!object@Feature$type %in% c("S", "H"))) {
@@ -150,25 +150,33 @@ setValidity(
     assert_that(all(object@AttributeValue$attribute %in% object@Attribute$id))
     assert_that(all(object@LayerElement$id %in% object@AttributeValue$element))
     assert_that(all(object@AttributeValue$element %in% object@LayerElement$id))
-    assert_that(all(object@Transformation$from %in% object@Reference$from))
-    assert_that(all(object@Reference$from %in% object@Transformation$from))
+    assert_that(
+      all(object@Transformation$source_crs %in% object@Reference$source_crs)
+    )
+    assert_that(
+      all(object@Reference$source_crs %in% object@Transformation$source_crs)
+    )
 
     test_crs <- unique(object@LayerElement$crs)
     no_transformation <- valid_crs(test_crs)
-    if (!all(test_crs[!no_transformation] %in% object@Transformation$from)) {
+    if (
+      !all(test_crs[!no_transformation] %in% object@Transformation$source_crs)
+    ) {
       stop(
-"All non standards CRS in the LayerElement slot must have a match in from field
+"All non standards CRS in the LayerElement slot must have a match in source_crs field
 of the Transformation slot"
       )
     }
-    if (!all(object@Transformation$from %in% test_crs[!no_transformation])) {
+    if (
+      !all(object@Transformation$source_crs %in% test_crs[!no_transformation])
+    ) {
       stop(
-"Unrequired crs in the from field of the Transformation slot"
+"Unrequired crs in the source_crs field of the Transformation slot"
       )
     }
-    test_crs <- unique(object@Transformation$to)
+    test_crs <- unique(object@Transformation$target_crs)
     if (!all(valid_crs(test_crs))) {
-      stop("All crs in the to field from the Transformation slot must be valid")
+      stop("All crs in the to field target_crs the Transformation slot must be valid")
     }
   }
 )

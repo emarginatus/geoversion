@@ -45,15 +45,15 @@ sppolydf.bis <- sp::SpatialPolygonsDataFrame( #nolint
 rownames(df) <- c("A", "B", "C")
 sppolydf2 <- sp::SpatialPolygonsDataFrame(sppoly[1:2], df[1:2, ], match.ID = FALSE) #nolint
 reference_90ccw <- data.frame(
-  from = 1,
+  source_crs = 1,
   source_x = c(0, 0, 1, 1),
   source_y = c(0, 1, 0, 1),
   target_x = c(1, 0, 1, 0),
   target_y = c(0, 0, 1, 1)
 )
 transformation_90ccw <- data.frame(
-  from = 1,
-  to = NA_character_,
+  source_crs = 1,
+  target_crs = NA_character_,
   stringsAsFactors = FALSE
 )
 sppolydf_90ccw <- sppolydf

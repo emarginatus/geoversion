@@ -81,12 +81,12 @@ setMethod(
       crs <- object@proj4string@projargs %>%
         rep(length(object))
       dots$transformation <- data.frame(
-        from = character(0),
-        to = character(0),
+        source_crs = character(0),
+        target_crs = character(0),
         stringsAsFactors = FALSE
       )
       dots$reference <- data.frame(
-        from = character(0),
+        source_crs = character(0),
         source_x = numeric(0),
         source_y = numeric(0),
         target_x = numeric(0),
@@ -101,12 +101,12 @@ setMethod(
       no_transformation <- valid_crs(as.character(test_crs))
       if (all(no_transformation)) {
         dots$transformation <- data.frame(
-          from = character(0),
-          to = character(0),
+          source_crs = character(0),
+          target_crs = character(0),
           stringsAsFactors = FALSE
         )
         dots$reference <- data.frame(
-          from = character(0),
+          source_crs = character(0),
           source_x = numeric(0),
           source_y = numeric(0),
           target_x = numeric(0),
@@ -118,7 +118,7 @@ setMethod(
           stop("Non standard CRS require both reference and transformation.")
         }
         dots$reference <- dots$reference %>%
-          group_by_(~from) %>%
+          group_by_(~source_crs) %>%
           do_(
             ref = ~select_(., ~source_x, ~source_y, ~target_x, ~target_y) %>%
               arrange_(~source_x, ~source_y, ~target_x, ~target_y) %>%
@@ -129,23 +129,23 @@ setMethod(
           ) %>%
           unnest_(~ref)
         dots$transformation <- dots$reference %>%
-          distinct_(~from, ~hash) %>%
-          inner_join(dots$transformation, by = "from") %>%
-          select_(from = ~hash, ~to)
+          distinct_(~source_crs, ~hash) %>%
+          inner_join(dots$transformation, by = "source_crs") %>%
+          select_(source_crs = ~hash, ~target_crs)
         crs <- data.frame(
-          from = crs,
+          source_crs = crs,
           stringsAsFactors = FALSE
         ) %>%
           left_join(
             dots$reference %>%
-              distinct_(~from, ~hash),
-            by = "from"
+              distinct_(~source_crs, ~hash),
+            by = "source_crs"
           ) %>%
           select_(~hash) %>%
           unlist() %>%
           unname()
         dots$reference <- dots$reference %>%
-          select_(~-from, from = ~hash)
+          select_(~-source_crs, source_crs = ~hash)
       }
       object[[dots$crs.id]] <- NULL
     }
