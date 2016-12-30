@@ -369,5 +369,61 @@ store <- function(x, name, connection){
     select_(element = ~hash, value = ~crs.y, ~spawn, ~destroy)
   DBI::dbWriteTable(connection, "crs", new.crs, append = TRUE)
 
+  x@Transformation %>%
+    as.data.frame() %>%
+    DBI::dbWriteTable(
+      con = connection,
+      name = "staging_transformation",
+      overwrite = TRUE
+    )
+  DBI::dbGetQuery(
+    conn = connection,
+    "
+    INSERT INTO
+      transformation
+    SELECT
+      st.source_crs,
+      st.target_crs
+    FROM
+      staging_transformation AS st
+    LEFT JOIN
+      transformation AS t
+    ON
+      st.source_crs = t.source_crs AND
+      st.target_crs = t.target_crs
+    WHERE
+      t.source_crs IS NULL
+    "
+  )
+  x@Reference %>%
+    as.data.frame() %>%
+    DBI::dbWriteTable(
+      con = connection,
+      name = "staging_reference",
+      overwrite = TRUE
+    )
+  DBI::dbGetQuery(
+    conn = connection,
+    "
+    INSERT INTO
+      reference
+    SELECT
+      sr.source_crs,
+      sr.source_x,
+      sr.source_y,
+      sr.target_x,
+      sr.target_y
+    FROM
+      staging_reference AS sr
+    LEFT JOIN
+      reference AS r
+    ON
+      sr.source_crs = r.source_crs
+    WHERE
+      r.source_crs IS NULL
+    "
+  )
+
+
   return(invisible(NULL))
 }

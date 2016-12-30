@@ -1000,5 +1000,26 @@ test_that(
       transformation = transformation_90ccw
     )
     store(x = gv, name = paste(layername, "trans"), connection = connection)
- }
+    ref <- DBI::dbReadTable(connection, "reference") %>%
+      full_join(
+        reference_90ccw,
+        by = c("source_x", "source_y", "target_x", "target_y")
+      )
+    expect_true(assertthat::noNA(ref))
+    expect_identical(
+      nrow(ref),
+      nrow(reference_90ccw)
+    )
+    trans <- DBI::dbReadTable(connection, "transformation") %>%
+      full_join(transformation_90ccw, by = "target_crs")
+    expect_true(
+      trans %>%
+        select_(dplyr::starts_with("source")) %>%
+        assertthat::noNA()
+    )
+    expect_identical(
+      nrow(trans),
+      nrow(transformation_90ccw)
+    )
+  }
 )
