@@ -207,6 +207,79 @@ retrieve <- function(name, connection, timestamp = NA_real_){
   ) %>%
     DBI::dbGetQuery(conn = connection)
 
+  transformation <- sprintf("
+    SELECT
+      t.source_crs,
+      t.target_crs
+    FROM
+      (
+        SELECT
+          crs.value
+        FROM
+          (
+              element AS e
+            INNER JOIN
+              layerelement AS le
+            ON
+              e.hash = le.hash
+          )
+        INNER JOIN
+          crs
+        ON
+          e.hash = crs.element
+        WHERE
+          le.layer = %s AND
+          %s
+        GROUP BY
+          crs.value
+      ) AS c
+    INNER JOIN
+      transformation AS t
+    ON
+      c.value = t.source_crs",
+    DBI::dbQuoteString(connection, layer),
+    timerange("crs", timestamp, connection)
+  ) %>%
+    DBI::dbGetQuery(conn = connection)
+
+  reference <- sprintf("
+    SELECT
+      r.source_crs,
+      r.source_x,
+      r.source_y,
+      r.target_x,
+      r.target_y
+    FROM
+      (
+        SELECT
+          crs.value
+        FROM
+          (
+              element AS e
+            INNER JOIN
+              layerelement AS le
+            ON
+              e.hash = le.hash
+          )
+        INNER JOIN
+          crs
+        ON
+          e.hash = crs.element
+        WHERE
+          le.layer = %s AND
+          %s
+        GROUP BY
+          crs.value
+      ) AS c
+    INNER JOIN
+      reference AS r
+    ON
+      c.value = r.source_crs",
+    DBI::dbQuoteString(connection, layer),
+    timerange("crs", timestamp, connection)
+  ) %>%
+    DBI::dbGetQuery(conn = connection)
+
   new(
     "geoVersion",
     Coordinates = coordinates,
@@ -214,6 +287,8 @@ retrieve <- function(name, connection, timestamp = NA_real_){
     Features = features,
     LayerElement = layerelement,
     Attribute = attribute,
-    AttributeValue = attribute_value
+    AttributeValue = attribute_value,
+    Transformation = transformation,
+    Reference = reference
   )
 }

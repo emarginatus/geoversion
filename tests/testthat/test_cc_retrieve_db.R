@@ -108,3 +108,11 @@ test_that("retrieve handles holes in polygons", {
       unname()
   )
 })
+
+test_that("it returns the reference and transformation", {
+  layername <- "test trans"
+  expect_is(
+    output <- retrieve(name = layername, connection = connection),
+    "geoVersion"
+  )
+})
