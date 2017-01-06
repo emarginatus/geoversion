@@ -31,7 +31,9 @@ Collate:
     'convert_polygon.R'
     'imports.R'
     'retrieve_db.R'
+    'rotation.R'
     'setup_db.R'
     'store_db.R'
+    'transform.R'
     'valid_crs.R'
 VignetteBuilder: knitr
