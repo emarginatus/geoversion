@@ -11,6 +11,7 @@ transform <- function(object, models){
   assert_that(inherits(object, "geoVersion"))
   assert_that(inherits(models, "tbl"))
   validObject(object)
+
   assert_that(has_name(models, "source_crs"))
   assert_that(has_name(models, "model"))
   assert_that(has_name(models, "shift_x"))
@@ -27,13 +28,19 @@ transform <- function(object, models){
       by = c("features" = "hash.y")
     ) %>%
     select_(~crs, ~hash, ~succession, ~x, ~y) %>%
-    inner_join(
+    left_join(
       models %>%
+        semi_join(
+          object@Transformation %>%
+            filter_(~!source_crs %in% target_crs),
+          by = "source_crs"
+        ) %>%
         select_(~source_crs, ~shift_x, ~shift_y),
       by = c("crs" = "source_crs")
     ) %>%
     group_by_(~crs)
   object@Coordinates <- original %>%
+    filter_(~!is.na(shift_x)) %>%
     mutate_(
       variable = ~"x",
       a = ~x - shift_x,
@@ -41,6 +48,7 @@ transform <- function(object, models){
     ) %>%
     bind_rows(
       original %>%
+        filter_(~!is.na(shift_x)) %>%
         mutate_(
           variable = ~"y",
           a = ~y - shift_y,
@@ -59,22 +67,32 @@ transform <- function(object, models){
     ) %>%
     unnest_(c("output", "target")) %>%
     spread_(key_col = "variable", value_col = "target") %>%
-    as.data.frame()
+    as.data.frame() %>%
+    bind_rows(
+      original %>%
+        filter_(~is.na(shift_x)) %>%
+        ungroup() %>%
+        select_(~hash, ~succession, ~x, ~y)
+    )
   object@LayerElement <- object@LayerElement %>%
     left_join(
       object@Transformation %>%
+        filter_(~!source_crs %in% target_crs) %>%
         mutate_(trans = ~TRUE),
       by = c("crs" = "source_crs")
     ) %>%
     transmute_(
       ~id,
       ~features,
-      crs = ~ifelse(trans, target_crs, crs)
+      crs = ~ifelse(is.na(trans), crs, target_crs)
     )
   object@Transformation <- object@Transformation %>%
     semi_join(object@LayerElement, by = c("source_crs" = "crs"))
   object@Reference <- object@Reference %>%
     semi_join(object@LayerElement, by = c("source_crs" = "crs"))
   validObject(object)
+  if (any(object@Transformation$source_crs %in% models$source_crs)) {
+    object <- transform(object = object, models = models)
+  }
   return(object)
 }

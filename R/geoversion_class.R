@@ -175,7 +175,8 @@ field of the Transformation slot"
       )
     }
     test_crs <- unique(object@Transformation$target_crs)
-    if (!all(valid_crs(test_crs))) {
+    test_crs <- test_crs[!valid_crs(test_crs)]
+    if (!all(test_crs %in% object@Transformation$source_crs)) {
       stop(
 "All crs in the to field target_crs the Transformation slot must be valid"
 )

@@ -49,16 +49,32 @@ sppolydf2 <- sp::SpatialPolygonsDataFrame(
   match.ID = FALSE
 )
 reference_90ccw <- data.frame(
-  source_crs = 1,
+  source_crs = "1",
   source_x = c(0, 0, 1, 1),
   source_y = c(0, 1, 0, 1),
   target_x = c(1, 0, 1, 0),
-  target_y = c(0, 0, 1, 1)
+  target_y = c(0, 0, 1, 1),
+  stringsAsFactors = FALSE
 )
 transformation_90ccw <- data.frame(
-  source_crs = 1,
+  source_crs = "1",
   target_crs = NA_character_,
   stringsAsFactors = FALSE
 )
 sppolydf_90ccw <- sppolydf
-sppolydf_90ccw$crs <- 1
+sppolydf_90ccw$crs <- "1"
+sppolydf_multi <- sppolydf
+sppolydf_multi$crs <- c("1", "2")
+reference_multi <- data.frame(
+  source_crs = c("1", "1", "1", "1", "2", "2", "2", "2"),
+  source_x = c(0, 1, 1, 0, 0, 0, 1, 1),
+  source_y = c(0, 0, 1, 1, 0, 1, 1, 0),
+  target_x = c(1, 1, 0, 0, 0.5, -0.5, 0.5, 1.5),
+  target_y = c(0, 1, 1, 0, -0.5, 0.5, 1.5, 0.5),
+  stringsAsFactors = FALSE
+)
+transformation_multi <- data.frame(
+  source_crs = c("1", "2"),
+  target_crs = c("2", NA),
+  stringsAsFactors = FALSE
+)

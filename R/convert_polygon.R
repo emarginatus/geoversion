@@ -128,10 +128,14 @@ setMethod(
               )
           ) %>%
           unnest_(~ref)
-        dots$transformation <- dots$reference %>%
+        crs_hash <- dots$reference %>%
           distinct_(~source_crs, ~hash) %>%
-          inner_join(dots$transformation, by = "source_crs") %>%
-          select_(source_crs = ~hash, ~target_crs)
+          rename_(old = ~source_crs)
+        dots$transformation <- dots$transformation %>%
+          left_join(crs_hash, by = c("target_crs" = "old")) %>%
+          transmute_(~source_crs, target_crs = ~ifelse(is.na(hash), target_crs, hash)) %>%
+          inner_join(crs_hash, by = c("source_crs" = "old")) %>%
+          transmute_(source_crs = ~hash, ~target_crs)
         crs <- data.frame(
           source_crs = crs,
           stringsAsFactors = FALSE
